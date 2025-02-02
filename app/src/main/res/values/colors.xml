@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="depth0">#D2D2D2</color>
+    <color name="depth1">#AAAAAA</color>
+    <color name="depth2">#828282</color>
+    <color name="depth3">#5A5A5A</color>
+    <color name="depth4">#323232</color>
+    <color name="depth5">#0A0A0A</color>
+</resources>
