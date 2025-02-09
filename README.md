@@ -1,6 +1,5 @@
 TODO
 
- - insert padding between objects
  - implement ftp (use the settings button)
  - rename the json objects
  - Create card to give a nicer overview of hop and mash steps

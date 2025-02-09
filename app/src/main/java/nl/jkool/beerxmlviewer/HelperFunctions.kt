@@ -2,6 +2,7 @@ package nl.jkool.beerxmlviewer
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -91,7 +92,7 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                     list.add(anObject.getJSONObject(i))
                 }
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    //verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(list.sortedBy { it.getString("NAME") }) { item ->
                         parseToComposable(item, parent, depth)
@@ -100,7 +101,7 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
             }
             else {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    //verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     for (i in 0 until anObject.length()) {
                         parseToComposable(anObject.get(i), parent, depth)
@@ -115,42 +116,50 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                     parent
                 }
             if (anObject.isOfLength(1)) {
-                Column(modifier = Modifier.padding(all = 10.dp)) {
+                Column(modifier = Modifier.padding(0.dp, 10.dp, 0.dp, 10.dp)) {
                     Text("${parent}:")
                     for (key in anObject.keys()) {
                         if (key != "NAME") {
-                            parseToComposable(anObject.get(key.toString()), key.toString(), depth)
+                            Box(modifier = Modifier.padding(start = 10.dp)) {
+                                parseToComposable(anObject.get(key.toString()), key.toString(), depth)
+                            }
                         }
                     }
 
                 }
             } else {
-                var isExpanded by remember { mutableStateOf(false) }
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = colorResource(depthToColorId(depth)),
-                    modifier = Modifier.clickable { isExpanded = !isExpanded }
-                ) {
-                    Column(modifier = Modifier.padding(all = 10.dp)) {
-                        if (isExpanded) {
-                            Text(
-                                "$name ▶",
-                                fontSize = 18.sp,
-                                modifier = Modifier.padding(all = 4.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        } else {
-                            Text(
-                                "$name ▼",
-                                fontSize = 18.sp,
-                                modifier = Modifier.padding(all = 4.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                        if (isExpanded) {
-                            for (key in anObject.keys()) {
-                                if (key != "NAME") {
-                                    parseToComposable(anObject.get(key.toString()), key.toString(), depth+1)
+                Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+                    var isExpanded by remember { mutableStateOf(false) }
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = colorResource(depthToColorId(depth)),
+                        modifier = Modifier.clickable { isExpanded = !isExpanded }
+                    ) {
+                        Column(modifier = Modifier.padding(all = 10.dp)) {
+                            if (isExpanded) {
+                                Text(
+                                    "$name ▶",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.padding(all = 4.dp),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            } else {
+                                Text(
+                                    "$name ▼",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.padding(all = 4.dp),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                            if (isExpanded) {
+                                for (key in anObject.keys()) {
+                                    if (key != "NAME") {
+                                        parseToComposable(
+                                            anObject.get(key.toString()),
+                                            key.toString(),
+                                            depth + 1
+                                        )
+                                    }
                                 }
                             }
                         }
