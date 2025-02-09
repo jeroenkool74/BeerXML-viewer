@@ -344,7 +344,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
-                                modifier = Modifier.padding(start = 8.dp, end = 16.dp)
+                                modifier = Modifier.padding(start = 8.dp, end = 16.dp).clickable{
+                                    activity.setContent {
+                                        Settings(activity, context)
+                                    }
+                                }
                             )
                         }
                     )
