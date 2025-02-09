@@ -56,7 +56,7 @@ class Brews (
 
     fun toJSON(): JSONObject? {
         if (data != null){
-            return JSONObject().put("BREWS", JSONObject().put("BREW", data))
+            return JSONObject().put("RECIPES", JSONObject().put("RECIPE", data))
         } else {
             return null
         }
@@ -67,7 +67,7 @@ fun jsonToBrewsObject(input: JSONObject?): Brews {
     if (input == null) {
         return  Brews(null)
     } else {
-        val jsonObject = input.getJSONObject("BREWS").get("BREW")
+        val jsonObject = input.getJSONObject("RECIPES").get("RECIPE")
         return Brews(jsonObject)
     }
 }

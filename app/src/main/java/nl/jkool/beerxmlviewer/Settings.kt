@@ -27,19 +27,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import it.sauronsoftware.ftp4j.FTPClient
+import it.sauronsoftware.ftp4j.FTPException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import nl.jkool.beerxmlviewer.ui.theme.BeerXMLViewerTheme
 import org.json.JSONObject
+import org.json.XML
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.Writer
+import java.net.UnknownHostException
 
-fun storeSettings(context: Context, site: String, folder: String, username: String, password: String) {
-    val inputSite = if (site == "") "ftp://" else site
-    val inputFolder = if (folder == "") "/" else folder
+fun storeSettings(context: Context, site: String, path: String, username: String, password: String) {
+    val inputPath = if (path == "") "/" else path
     val jsObject = JSONObject()
-        .put("site", inputSite)
-        .put("folder", inputFolder)
+        .put("site", site)
+        .put("path", inputPath)
         .put("username", username)
         .put("password", password)
     var writer: Writer? = null
@@ -69,18 +75,204 @@ fun getSettings(context: Context): Map<String, String> {
     return jsonObject.toStringMap()
 }
 
+fun obtainFile(activity: MainActivity, context: Context, site: String, path: String, username: String, password: String) {
+    val mFTPClient = FTPClient()
+    try {
+        mFTPClient.connect(site, 21)
+        mFTPClient.login(username, password)
+        mFTPClient.type = FTPClient.TYPE_BINARY
+        mFTPClient.isPassive = true
+        mFTPClient.noop()
+        mFTPClient.changeDirectory(path)
+
+        try {
+            mFTPClient.download("hops.xml", File(context.applicationInfo.dataDir + "/hops.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/hops.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val hops = jsonToHopsObject(jsonObj)
+            hops.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain hops.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("brews.xml", File(context.applicationInfo.dataDir + "/brews.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/brews.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val brews = jsonToBrewsObject(jsonObj)
+            brews.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain brews.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("equipments.xml", File(context.applicationInfo.dataDir + "/equipments.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/equipments.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val equipments = jsonToEquipmentsObject(jsonObj)
+            equipments.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain equipments.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("fermentables.xml", File(context.applicationInfo.dataDir + "/fermentables.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/fermentables.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val fermentables = jsonToFermentablesObject(jsonObj)
+            fermentables.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain fermentables.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("mashs.xml", File(context.applicationInfo.dataDir + "/mashs.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/mashs.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val mashs = jsonToMashsObject(jsonObj)
+            mashs.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain mashs.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("miscs.xml", File(context.applicationInfo.dataDir + "/miscs.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/miscs.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val miscs = jsonToMiscsObject(jsonObj)
+            miscs.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain miscs.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("recipes.xml", File(context.applicationInfo.dataDir + "/recipes.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/recipes.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val recipes = jsonToRecipesObject(jsonObj)
+            recipes.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain recipes.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("styles.xml", File(context.applicationInfo.dataDir + "/styles.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/styles.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val styles = jsonToStylesObject(jsonObj)
+            styles.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain styles.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("waters.xml", File(context.applicationInfo.dataDir + "/waters.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/waters.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val waters = jsonToWatersObject(jsonObj)
+            waters.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain waters.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        try {
+            mFTPClient.download("yeasts.xml", File(context.applicationInfo.dataDir + "/yeasts.xml"))
+            val hopsFile =
+                File(context.applicationInfo.dataDir + "/yeasts.xml").inputStream()
+                    ?.bufferedReader()
+            val inputString = hopsFile.use { it?.readText() }!!
+            val jsonObj = XML.toJSONObject(inputString)
+            val yeasts = jsonToYeastsObject(jsonObj)
+            yeasts.store(context)
+        } catch (e: Exception) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Failed to obtain yeasts.xml", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+            }
+        }
+        mFTPClient.disconnect(true)
+        activity.runOnUiThread {
+            Toast.makeText(context, "Finished downloading files from FTP server.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "You may have to restart the app.", Toast.LENGTH_LONG).show()
+        }
+    } catch (e: FTPException) {
+        activity.runOnUiThread {
+            Toast.makeText(context, "${e.message}", Toast.LENGTH_LONG).show()
+        }
+    } catch (e: UnknownHostException) {
+        activity.runOnUiThread {
+            Toast.makeText(context, "Could not connect to FTP server.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Are you sure the web address is correct?", Toast.LENGTH_LONG).show()
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Settings(activity: MainActivity, context: Context) {
     val settings = getSettings(context)
     var site by remember {
         mutableStateOf(
-            settings.getOrDefault("site", "ftp://")
+            settings.getOrDefault("site", "")
         )
     }
-    var folder by remember {
+    var path by remember {
         mutableStateOf(
-            settings.getOrDefault("folder", "/")
+            settings.getOrDefault("path", "/")
         )
     }
     var username by remember {
@@ -102,12 +294,14 @@ fun Settings(activity: MainActivity, context: Context) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Menu",
-                            modifier = Modifier.padding(start = 16.dp, end = 8.dp).clickable {
-                                activity.setContent {
-                                    storeSettings(context, site, folder, username, password)
-                                    Main(activity, context)
+                            modifier = Modifier
+                                .padding(start = 16.dp, end = 8.dp)
+                                .clickable {
+                                    activity.setContent {
+                                        storeSettings(context, site, path, username, password)
+                                        Main(activity, context)
+                                    }
                                 }
-                            }
                         )
                     },
                     title = {
@@ -122,7 +316,7 @@ fun Settings(activity: MainActivity, context: Context) {
                     .padding(innerPadding)
                     .padding(12.dp)
             ) {
-                Text("FTP site, must start with 'ftp://;")
+                Text("FTP site, without the 'ftp://' prefix")
 
                 Row {
                     TextField(
@@ -132,11 +326,11 @@ fun Settings(activity: MainActivity, context: Context) {
                     )
                 }
 
-                Text("Folder, use '/' for root dir", modifier = Modifier.padding(top = 12.dp))
+                Text("Path, use '/' for root dir", modifier = Modifier.padding(top = 12.dp))
                 TextField(
-                    value = folder,
-                    onValueChange = { folder = it },
-                    label = { Text("folder") }
+                    value = path,
+                    onValueChange = { path = it },
+                    label = { Text("path") }
                 )
 
                 Text("Username", modifier = Modifier.padding(top = 12.dp))
@@ -157,7 +351,11 @@ fun Settings(activity: MainActivity, context: Context) {
                     modifier = Modifier.padding(top = 20.dp)
                 ) {
                     Button(
-                        onClick = {}
+                        onClick = {
+                            Thread {
+                                obtainFile(activity, context, site, path, username, password)
+                            }.start()
+                        }
                     ) {
                         Text(
                             text = "Obtain XML from ftp",
