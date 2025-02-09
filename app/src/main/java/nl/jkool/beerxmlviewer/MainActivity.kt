@@ -63,6 +63,7 @@ val codeToObject: Map<Int, String> =
     objectToCode.map{ it.value to it.key }.toMap()
 
 
+@Suppress("DEPRECATION")
 class MainActivity : ComponentActivity() {
 
     fun openFile(requestCode: Int) {
@@ -83,6 +84,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(
         requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
@@ -200,7 +202,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Hop"]),
-                        onClick = { navState = objectToCode["Hop"]!! }
+                        onClick = {
+                            navState = objectToCode["Hop"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -209,7 +214,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Fermentable"]),
-                        onClick = { navState = objectToCode["Fermentable"]!! }
+                        onClick = {
+                            navState = objectToCode["Fermentable"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -218,7 +226,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Yeast"]),
-                        onClick = { navState = objectToCode["Yeast"]!! }
+                        onClick = {
+                            navState = objectToCode["Yeast"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -227,7 +238,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Misc"]),
-                        onClick = { navState = objectToCode["Misc"]!! }
+                        onClick = {
+                            navState = objectToCode["Misc"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -236,7 +250,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Water"]),
-                        onClick = { navState = objectToCode["Water"]!! }
+                        onClick = {
+                            navState = objectToCode["Water"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -245,7 +262,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Equipment"]),
-                        onClick = { navState = objectToCode["Equipment"]!! }
+                        onClick = {
+                            navState = objectToCode["Equipment"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -254,7 +274,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Style"]),
-                        onClick = { navState = objectToCode["Style"]!! }
+                        onClick = {
+                            navState = objectToCode["Style"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -263,7 +286,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Mash"]),
-                        onClick = { navState = objectToCode["Mash"]!! }
+                        onClick = {
+                            navState = objectToCode["Mash"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -272,7 +298,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Recipe"]),
-                        onClick = { navState = objectToCode["Recipe"]!! }
+                        onClick = {
+                            navState = objectToCode["Recipe"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     NavigationDrawerItem(
@@ -281,7 +310,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             modifier = Modifier.padding(16.dp)
                         ) },
                         selected = (navState == objectToCode["Brew"]),
-                        onClick = { navState = objectToCode["Brew"]!! }
+                        onClick = {
+                            navState = objectToCode["Brew"]!!
+                            scope.launch { drawerState.close() }
+                        }
                     )
                 }
             }
