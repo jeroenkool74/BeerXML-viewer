@@ -1,6 +1,7 @@
 TODO
 
- - implement ftp (use the settings button)
+ - Make the menu close after selecting an menu item
+ - Implement ftp (use the settings button)
  - rename the json objects
  - Create card to give a nicer overview of hop and mash steps
  - Make a Dutch translation for the app
