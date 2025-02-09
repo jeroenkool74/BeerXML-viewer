@@ -184,7 +184,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
     BeerXMLViewerTheme {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
-        var navState by rememberSaveable { mutableStateOf(initView) }
+        var navState by rememberSaveable { mutableStateOf(1) }
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
