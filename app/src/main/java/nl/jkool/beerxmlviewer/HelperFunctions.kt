@@ -1,7 +1,6 @@
 package nl.jkool.beerxmlviewer
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -19,10 +18,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Locale
+import java.util.jar.Attributes.Name
 
 
 fun JSONObject.toStringMap(): Map<String, String> {
@@ -85,7 +88,32 @@ fun depthToColorId(depth: Int): Int =
     }
 
 @Composable
-fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: Boolean = false){
+fun NAMEtoName(input: String): String {
+    return when (input) {
+        "NAME" -> stringResource(R.string.NAME)
+
+        else -> input//input.lowercase().replaceFirstChar { it.uppercase() }.replace("_", " ")
+    }
+}
+
+fun NAMEtoUnit(input: String): String {
+    return when (input) {
+        "ALPHA",
+        "BETA",
+        "HSI",
+        "HUMULENE",
+        "CAROPHYLLENE",
+        "COHUMULONE",
+        "MYRCENE",
+        "TOTAL_OIL",
+        "COARSE_FINE_DIFF" -> "%"
+        "DIASTATIC_POWER" -> "Linter"
+        else -> ""
+    }
+}
+
+@Composable
+fun ParseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: Boolean = false){
     when (anObject) {
         is JSONArray -> {
             if (topLayer){
@@ -97,7 +125,7 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                     //verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(list.sortedBy { it.getString("NAME") }) { item ->
-                        parseToComposable(item, parent, depth)
+                        ParseToComposable(item, parent, depth)
                     }
                 }
             }
@@ -106,7 +134,7 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                     //verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     for (i in 0 until anObject.length()) {
-                        parseToComposable(anObject.get(i), parent, depth)
+                        ParseToComposable(anObject.get(i), parent, depth)
                     }
                 }
             }
@@ -117,7 +145,7 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
                 ) {
-                    parseToComposable(anObject, parent, depth)
+                    ParseToComposable(anObject, parent, depth)
                 }
             } else {
                 val name = try {
@@ -127,11 +155,11 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                 }
                 if (anObject.isOfLength(1)) {
                     Column(modifier = Modifier.padding(0.dp, 10.dp, 0.dp, 10.dp)) {
-                        Text("${parent}:")
+                        Text("${NAMEtoName(parent)}:")
                         for (key in anObject.keys()) {
                             if (key != "NAME") {
                                 Box(modifier = Modifier.padding(start = 10.dp)) {
-                                    parseToComposable(
+                                    ParseToComposable(
                                         anObject.get(key.toString()),
                                         key.toString(),
                                         depth
@@ -168,7 +196,7 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                                 if (isExpanded) {
                                     for (key in anObject.keys()) {
                                         if (key != "NAME") {
-                                            parseToComposable(
+                                            ParseToComposable(
                                                 anObject.get(key.toString()),
                                                 key.toString(),
                                                 depth + 1
@@ -192,7 +220,7 @@ fun parseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
 @Composable
 fun parseText(key: String, value: String) {
     Text(
-        "${key}: $value",
+        "${NAMEtoName(key)}: ${value}${NAMEtoUnit(key)}",
         modifier = Modifier.padding(all = 4.dp),
         style = MaterialTheme.typography.bodyMedium
     )

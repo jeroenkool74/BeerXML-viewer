@@ -3,17 +3,13 @@ package nl.jkool.beerxmlviewer
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.json.JSONArray
 import org.json.JSONObject
 import org.json.XML
 import java.io.BufferedReader
@@ -30,7 +26,7 @@ class Yeasts (
             modifier = Modifier.padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
             if (data != null) {
-                parseToComposable(data, "", topLayer = true)
+                ParseToComposable(data, "", topLayer = true)
             } else {
                 Text("Something went wrong, failed to load content.")
             }
