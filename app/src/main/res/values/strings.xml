@@ -116,7 +116,23 @@
     <string name="CARB_RATE">Carbonation rate</string>
     <string name="COLOR_RATE">Color rate</string>
     <string name="ABV_RATE">Alcohol by volume rate</string>
-    <string name="Waar_gebleven">Net style af, straks door naar mash. Daarna ook nog alle enum velden.</string>
+    <string name="GRAIN_TEMP">Grain temperature</string>
+    <string name="TUN_TEMP">Tun temperature</string>
+    <string name="SPARGE_TEMP">Sparge temperature</string>
+    <string name="SG_LAST_RUNNINGS">SG last runnings</string>
+    <string name="PH_LAST_RUNNINGS">PH last runnings</string>
+    <string name="TUN_SPECIFIC_HEATH">Tun specific heath</string>
+    <string name="EQUIP_ADJUST">Adjust temperature effects of equipment</string>
+    <string name="INFUSE_AMOUNT">Infuse amount</string>
+    <string name="STEP_TEMP">Step temperature</string>
+    <string name="STEP_TIME">Step time</string>
+    <string name="RAMP_TIME">Ramp time</string>
+    <string name="END_TEMP">End temperature</string>
+    <string name="WATER_GRAIN_RATIO">Water-grain ratio</string>
+    <string name="DECOCTION_AMT">Volume of decoction</string>
+    <string name="DISPLAY_INFUSE_AMT">Infusion amount</string>
+    <string name="DISPLAY_STEP_TEMP">Display step temperature</string>
+    <string name="WAAR_GEBLEVEN">Nu de enumarable ietems invoeren</string>
 
 
     <string name="False">false</string>
