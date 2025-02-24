@@ -39,6 +39,7 @@ import java.io.File
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.Writer
+import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 fun storeSettings(context: Context, site: String, path: String, username: String, password: String) {
@@ -257,6 +258,15 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         activity.runOnUiThread {
             Toast.makeText(context, "Could not connect to FTP server.", Toast.LENGTH_LONG).show()
             Toast.makeText(context, "Are you sure the web address is correct?", Toast.LENGTH_LONG).show()
+        }
+    } catch (e: SocketTimeoutException) {
+        activity.runOnUiThread {
+            Toast.makeText(context, "Connection timeout, server does not respond.", Toast.LENGTH_LONG).show()
+        }
+    }
+    catch (e: Exception) {
+        activity.runOnUiThread {
+            Toast.makeText(context, "${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 }
