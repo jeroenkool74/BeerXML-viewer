@@ -1,5 +1,7 @@
 package nl.jkool.beerxmlviewer
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -85,7 +87,7 @@ fun depthToColorId(depth: Int): Int =
     }
 
 @Composable
-fun NAMEtoName(input: String): String {
+fun NAMEtoName(input: String, context: Context): String {
     return when (input) {
         "NAME" -> stringResource(R.string.NAME)
         "NOTES" -> stringResource(R.string.NOTES)
@@ -235,7 +237,106 @@ fun NAMEtoName(input: String): String {
         "DISPLAY_LAUTERDEADSPACE" -> stringResource(R.string.DISPLAY_LAUTERDEADSPACE)
         "ATTENUATION_FACTOR_CONSTANT" -> stringResource(R.string.ATTENUATION_FACTOR_CONSTANT)
         "MASH_STEPS" -> stringResource(R.string.MASH_STEPS)
-        else -> input//input.lowercase().replaceFirstChar { it.uppercase() }.replace("_", " ")
+        "HOPS" -> stringResource(R.string.HOPS)
+        "FERMENTABLES" -> stringResource(R.string.FERMENTABLES)
+        "MISCS" -> stringResource(R.string.MISCS)
+        "YEASTS" -> stringResource(R.string.YEASTS)
+        "WATERS" -> stringResource(R.string.WATERS)
+        "Boil" -> stringResource(R.string.Boil)
+        "DryHop" -> stringResource(R.string.DryHop)
+        "Mash" -> stringResource(R.string.Mash)
+        "FirstWort" -> stringResource(R.string.FirstWort)
+        "Aroma" -> stringResource(R.string.Aroma)
+        "Bittering" -> stringResource(R.string.Bittering)
+        "Both" -> stringResource(R.string.Both)
+        "Pallet" -> stringResource(R.string.Pallet)
+        "Plug" -> stringResource(R.string.Plug)
+        "Leaf" -> stringResource(R.string.Leaf)
+        "Grain" -> stringResource(R.string.Grain)
+        "Sugar" -> stringResource(R.string.Sugar)
+        "Extract" -> stringResource(R.string.Extract)
+        "DryExtract" -> stringResource(R.string.DryExtract)
+        "Adjunct" -> stringResource(R.string.Adjunct)
+        "Ale" -> stringResource(R.string.Ale)
+        "Lager" -> stringResource(R.string.Lager)
+        "Wheat" -> stringResource(R.string.Wheat)
+        "Wine" -> stringResource(R.string.Wine)
+        "Champagne" -> stringResource(R.string.Champagne)
+        "Liquid" -> stringResource(R.string.Liquid)
+        "Dry" -> stringResource(R.string.Dry)
+        "Slant" -> stringResource(R.string.Slant)
+        "Culture" -> stringResource(R.string.Culture)
+        "Low" -> stringResource(R.string.Low)
+        "Medium" -> stringResource(R.string.Medium)
+        "High" -> stringResource(R.string.High)
+        "VeryHigh" -> stringResource(R.string.VeryHigh)
+        "Spice" -> stringResource(R.string.Spice)
+        "Fining" -> stringResource(R.string.Fining)
+        "WaterAgent" -> stringResource(R.string.WaterAgent)
+        "Herb" -> stringResource(R.string.Herb)
+        "Flavor" -> stringResource(R.string.Flavor)
+        "Other" -> stringResource(R.string.Other)
+        "Primary" -> stringResource(R.string.Primary)
+        "Secondary" -> stringResource(R.string.Secondary)
+        "Bottling" -> stringResource(R.string.Bottling)
+        "Mead" -> stringResource(R.string.Mead)
+        "Mixed" -> stringResource(R.string.Mixed)
+        "Cider" -> stringResource(R.string.Cider)
+        "Infusion" -> stringResource(R.string.Infusion)
+        "Temperature" -> stringResource(R.string.Temperature)
+        "Decoction" -> stringResource(R.string.Decoction)
+        "PartialMash" -> stringResource(R.string.PartialMash)
+        "AllGrain" -> stringResource(R.string.AllGrain)
+        "Rager" -> stringResource(R.string.Rager)
+        "Tinseth" -> stringResource(R.string.Tinseth)
+        "Garetz" -> stringResource(R.string.Garetz)
+        "False" -> stringResource(R.string.False)
+        "True" -> stringResource(R.string.True)
+        "ACID_TO_pH_5.7" -> stringResource(R.string.ACID_TO_pH_5_7)
+        "TIME_AERATED" -> stringResource(R.string.TIME_AERATED)
+        "FREE_FIELD" -> stringResource(R.string.FREE_FIELD)
+        "FREE_FIELD_NAME" -> stringResource(R.string.FREE_FIELD_NAME)
+        "KETTLE_VOLUME" -> stringResource(R.string.KETTLE_VOLUME)
+        "TUN_MATERIAL" -> stringResource(R.string.TUN_MATERIAL)
+        "TUN_HEIGHT" -> stringResource(R.string.TUN_HEIGHT)
+        "AUTONR" -> stringResource(R.string.AUTONR)
+        "OG" -> stringResource(R.string.OG)
+        "FG" -> stringResource(R.string.FG)
+        "FERMENTATION_STAGES" -> stringResource(R.string.FERMENTATION_STAGES)
+        "FORCED_CARBONATION" -> stringResource(R.string.FORCED_CARBONATION)
+        "EST_OG" -> stringResource(R.string.EST_OG)
+        "EST_FG" -> stringResource(R.string.EST_FG)
+        "EST_COLOR" -> stringResource(R.string.EST_COLOR)
+        "IBU" -> stringResource(R.string.IBU)
+        "IBU_METHOD" -> stringResource(R.string.IBU_METHOD)
+        "COLOR_METHOD" -> stringResource(R.string.COLOR_METHOD)
+        "ACID_SPARGE_PERC" -> stringResource(R.string.ACID_SPARGE_PERC)
+        "SPARGE_ACID_TYPE" -> stringResource(R.string.SPARGE_ACID_TYPE)
+        "TARGET_PH" -> stringResource(R.string.TARGET_PH)
+        "SG_END_MASH" -> stringResource(R.string.SG_END_MASH)
+        "SPARGE_WATER_COMP" -> stringResource(R.string.SPARGE_WATER_COMP)
+        "OG_BEFORE_BOIL" -> stringResource(R.string.OG_BEFORE_BOIL)
+        "OG_FERMENTER" -> stringResource(R.string.OG_FERMENTER)
+        "COOLING_METHOD" -> stringResource(R.string.COOLING_METHOD)
+        "AERATION_TYPE" -> stringResource(R.string.AERATION_TYPE)
+        "SG_END_PRIMARY" -> stringResource(R.string.SG_END_PRIMARY)
+        "FORCED_CARB_KEGS" -> stringResource(R.string.FORCED_CARB_KEGS)
+        "INVENTORY_REDUCED" -> stringResource(R.string.INVENTORY_REDUCED)
+        "LOCKED" -> stringResource(R.string.LOCKED)
+        "PRIMING_SUGAR_BOTTLES" -> stringResource(R.string.PRIMING_SUGAR_BOTTLES)
+        "PRIMING_SUGAR_KEGS" -> stringResource(R.string.PRIMING_SUGAR_KEGS)
+        "BATCH_DIVIDED" -> stringResource(R.string.BATCH_DIVIDED)
+        "BATCH_DIVISION" -> stringResource(R.string.BATCH_DIVISION)
+        "DIVIDED_FROM" -> stringResource(R.string.DIVIDED_FROM)
+        "CALC_ACID" -> stringResource(R.string.CALC_ACID)
+        "CULTURE_DATE" -> stringResource(R.string.CULTURE_DATE)
+        "AMOUNT_YEAST" -> stringResource(R.string.AMOUNT_YEAST)
+        "INVENTORY" -> stringResource(R.string.INVENTORY)
+        //TODO: Brew
+        else -> {
+            Toast.makeText(context, input, Toast.LENGTH_LONG).show()
+            input
+        }//input.lowercase().replaceFirstChar { it.uppercase() }.replace("_", " ")
     }
 }
 
@@ -256,7 +357,7 @@ fun NAMEtoUnit(input: String): String {
 }
 
 @Composable
-fun ParseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: Boolean = false){
+fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: Int = 0, topLayer: Boolean = false){
     when (anObject) {
         is JSONArray -> {
             if (topLayer){
@@ -268,7 +369,7 @@ fun ParseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                     //verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(list.sortedBy { it.getString("NAME") }) { item ->
-                        ParseToComposable(item, parent, depth)
+                        ParseToComposable(item, parent, context,  depth)
                     }
                 }
             }
@@ -277,7 +378,7 @@ fun ParseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                     //verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     for (i in 0 until anObject.length()) {
-                        ParseToComposable(anObject.get(i), parent, depth)
+                        ParseToComposable(anObject.get(i), parent, context, depth)
                     }
                 }
             }
@@ -288,7 +389,7 @@ fun ParseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
                 ) {
-                    ParseToComposable(anObject, parent, depth)
+                    ParseToComposable(anObject, parent, context, depth)
                 }
             } else {
                 val name = try {
@@ -298,13 +399,14 @@ fun ParseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                 }
                 if (anObject.isOfLength(1)) {
                     Column(modifier = Modifier.padding(0.dp, 10.dp, 0.dp, 10.dp)) {
-                        Text("${NAMEtoName(parent)}:")
+                        Text("${NAMEtoName(parent, context)}:")
                         for (key in anObject.keys()) {
                             if (key != "NAME") {
                                 Box(modifier = Modifier.padding(start = 10.dp)) {
                                     ParseToComposable(
                                         anObject.get(key.toString()),
                                         key.toString(),
+                                        context,
                                         depth
                                     )
                                 }
@@ -342,6 +444,7 @@ fun ParseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
                                             ParseToComposable(
                                                 anObject.get(key.toString()),
                                                 key.toString(),
+                                                context,
                                                 depth + 1
                                             )
                                         }
@@ -354,23 +457,23 @@ fun ParseToComposable(anObject: Any, parent: String, depth: Int = 0, topLayer: B
             }
         }
         else -> {
-            parseText(parent, anObject.toString())
+            parseText(parent, anObject.toString(), context)
         }
     }
 }
 
 
 @Composable
-fun parseText(key: String, value: String) {
+fun parseText(key: String, value: String, context: Context) {
     Text(
-        "${NAMEtoName(key)}: ${value}${NAMEtoUnit(key)}",
+        "${NAMEtoName(key, context)}: ${value}${NAMEtoUnit(key)}",
         modifier = Modifier.padding(all = 4.dp),
         style = MaterialTheme.typography.bodyMedium
     )
 }
 
 @Composable
-fun mapCard(map: Map<String, String>) {
+fun mapCard(map: Map<String, String>, context: Context) {
 
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -394,7 +497,7 @@ fun mapCard(map: Map<String, String>) {
             if (isExpanded) {
                 for ((key, value) in map) {
                     if (key != "NAME") {
-                        parseText(key, value)
+                        parseText(key, value, context)
                     }
                 }
             }

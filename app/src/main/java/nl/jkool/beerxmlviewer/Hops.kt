@@ -21,7 +21,7 @@ class Hops (
     val data: Any?
 ) {
     @Composable
-    fun hopsList(innerPadding: PaddingValues) {
+    fun hopsList(innerPadding: PaddingValues, context: Context) {
         /*
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -36,7 +36,7 @@ class Hops (
             modifier = Modifier.padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
             if (data != null) {
-                ParseToComposable(data, "", topLayer = true)
+                ParseToComposable(data, "", context, topLayer = true)
             } else {
                 Text("Something went wrong, failed to load content.")
             }

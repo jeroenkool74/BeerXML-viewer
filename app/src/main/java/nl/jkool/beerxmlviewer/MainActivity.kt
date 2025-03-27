@@ -378,7 +378,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                                 Toast.makeText(context, "Failed to load hops", Toast.LENGTH_LONG).show()
                                 Hops(null)
                             }
-                        view.hopsList(innerPadding)
+                        view.hopsList(innerPadding, context)
                     }
                     objectToCode["Fermentable"] -> {
                         val view =
@@ -387,7 +387,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Fermentables(null)
                             }
-                        view.fermentablesList(innerPadding)
+                        view.fermentablesList(innerPadding, context)
                     }
                     objectToCode["Yeast"] -> {
                         val view =
@@ -396,7 +396,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Yeasts(null)
                             }
-                        view.yeastsList(innerPadding)
+                        view.yeastsList(innerPadding, context)
                     }
                     objectToCode["Misc"] -> {
                         val view =
@@ -405,7 +405,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Miscs(null)
                             }
-                        view.miscsList(innerPadding)
+                        view.miscsList(innerPadding, context)
                     }
                     objectToCode["Water"] -> {
                         val view =
@@ -414,7 +414,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Waters(null)
                             }
-                        view.watersList(innerPadding)
+                        view.watersList(innerPadding, context)
                     }
                     objectToCode["Equipment"] -> {
                         val view =
@@ -423,7 +423,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Equipments(null)
                             }
-                        view.equipmentsList(innerPadding)
+                        view.equipmentsList(innerPadding, context)
                     }
                     objectToCode["Style"] -> {
                         val view =
@@ -432,7 +432,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Styles(null)
                             }
-                        view.stylesList(innerPadding)
+                        view.stylesList(innerPadding, context)
                     }
                     objectToCode["Mash"] -> {
                         val view =
@@ -441,7 +441,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Mashs(null)
                             }
-                        view.mashsList(innerPadding)
+                        view.mashsList(innerPadding, context)
                     }
                     objectToCode["Recipe"] -> {
                         val view =
@@ -450,7 +450,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Recipes(null)
                             }
-                        view.recipesList(innerPadding)
+                        view.recipesList(innerPadding, context)
                     }
                     objectToCode["Brew"] -> {
                         val view =
@@ -459,7 +459,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Brews(null)
                             }
-                        view.brewsList(innerPadding)
+                        view.brewsList(innerPadding, context)
                     }
                     else -> Text("Something went wrong", modifier = Modifier.padding(innerPadding))
                 }
