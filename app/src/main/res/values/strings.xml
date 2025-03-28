@@ -243,5 +243,24 @@
     <string name="CULTURE_DATE">Culture date</string>
     <string name="AMOUNT_YEAST">Amount yeast</string>
     <string name="INVENTORY">Inventory</string>
-    TODO: Brew
+    <string name="PRIMARY_TEMP">Primary temp</string>
+    <string name="SECONDARY_TEMP">Secondary temp</string>
+    <string name="TERTIARY_TEMP">Tertiary temp</string>
+    <string name="EST_ABV">Estimated percentage alcohol by volume</string>
+    <string name="DATE">Date</string>
+    <string name="ABV">Percentage alcohol by volume</string>
+    <string name="ACTUAL_EFFICIENCY">Actual efficiency</string>
+    <string name="PARENT">Parent</string>
+    <string name="NR_RECIPE">Recipe number</string>
+    <string name="VOLUME_BEFORE_BOIL">Volume before boil</string>
+    <string name="LACTIC_SPARGE">Lactic sparge</string>
+    <string name="COOLING_TIME">Cooling time</string>
+    <string name="VOLUME_AFTER_BOIL">Volume after boil</string>
+    <string name="COOLING_TO">Cooling to</string>
+    <string name="START_TEMP_PRIMARY">Start temperature primary</string>
+    <string name="MAX_TEMP_PRIMARY">Maximum temperature primary</string>
+    <string name="END_TEMP_PRIMARY">End temperature primary</string>
+    <string name="TIME_STARTED">Time started</string>
+    <string name="TIME_ENDED">Time ended</string>
+    <string name="minutes">minutes</string>
 </resources>

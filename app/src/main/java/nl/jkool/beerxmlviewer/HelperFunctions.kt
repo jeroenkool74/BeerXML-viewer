@@ -1,7 +1,6 @@
 package nl.jkool.beerxmlviewer
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -87,7 +86,7 @@ fun depthToColorId(depth: Int): Int =
     }
 
 @Composable
-fun NAMEtoName(input: String, context: Context): String {
+fun translate(input: String, context: Context): String {
     return when (input) {
         "NAME" -> stringResource(R.string.NAME)
         "NOTES" -> stringResource(R.string.NOTES)
@@ -332,14 +331,33 @@ fun NAMEtoName(input: String, context: Context): String {
         "CULTURE_DATE" -> stringResource(R.string.CULTURE_DATE)
         "AMOUNT_YEAST" -> stringResource(R.string.AMOUNT_YEAST)
         "INVENTORY" -> stringResource(R.string.INVENTORY)
-        //TODO: Brew
+        "PRIMARY_TEMP" -> stringResource(R.string.PRIMARY_TEMP)
+        "SECONDARY_TEMP" -> stringResource(R.string.SECONDARY_TEMP)
+        "TERTIARY_TEMP" -> stringResource(R.string.TERTIARY_TEMP)
+        "EST_ABV" -> stringResource(R.string.EST_ABV)
+        "DATE" -> stringResource(R.string.DATE)
+        "ABV" -> stringResource(R.string.ABV)
+        "ACTUAL_EFFICIENCY" -> stringResource(R.string.ACTUAL_EFFICIENCY)
+        "PARENT" -> stringResource(R.string.PARENT)
+        "NR_RECIPE" -> stringResource(R.string.NR_RECIPE)
+        "LACTIC_SPARGE" -> stringResource(R.string.LACTIC_SPARGE)
+        "VOLUME_BEFORE_BOIL" -> stringResource(R.string.VOLUME_BEFORE_BOIL)
+        "COOLING_TIME" -> stringResource(R.string.COOLING_TIME)
+        "VOLUME_AFTER_BOIL" -> stringResource(R.string.VOLUME_AFTER_BOIL)
+        "COOLING_TO" -> stringResource(R.string.COOLING_TO)
+        "START_TEMP_PRIMARY" -> stringResource(R.string.START_TEMP_PRIMARY)
+        "MAX_TEMP_PRIMARY" -> stringResource(R.string.MAX_TEMP_PRIMARY)
+        "END_TEMP_PRIMARY" -> stringResource(R.string.END_TEMP_PRIMARY)
+        "TIME_STARTED" -> stringResource(R.string.TIME_STARTED)
+        "TIME_ENDED" -> stringResource(R.string.TIME_ENDED)
         else -> {
-            Toast.makeText(context, input, Toast.LENGTH_LONG).show()
+            //Toast.makeText(context, input, Toast.LENGTH_LONG).show()
             input
         }//input.lowercase().replaceFirstChar { it.uppercase() }.replace("_", " ")
     }
 }
 
+@Composable
 fun NAMEtoUnit(input: String): String {
     return when (input) {
         "ALPHA",
@@ -350,8 +368,18 @@ fun NAMEtoUnit(input: String): String {
         "COHUMULONE",
         "MYRCENE",
         "TOTAL_OIL",
-        "COARSE_FINE_DIFF" -> "%"
+        "COARSE_FINE_DIFF",
+        "MOISTURE",
+        "PROTEIN",
+        "ATTENUATION",
+        "MAX_IN_BATCH",
+         "YIELD" -> "%"
         "DIASTATIC_POWER" -> "Linter"
+        "AMOUNT" -> "kg/liter"
+        "TIME" -> stringResource(R.string.minutes)
+        "MAX_TEMPERATURE",
+        "MIN_TEMPERATURE" -> "°C"
+
         else -> ""
     }
 }
@@ -399,7 +427,7 @@ fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: In
                 }
                 if (anObject.isOfLength(1)) {
                     Column(modifier = Modifier.padding(0.dp, 10.dp, 0.dp, 10.dp)) {
-                        Text("${NAMEtoName(parent, context)}:")
+                        Text("${translate(parent, context)}:")
                         for (key in anObject.keys()) {
                             if (key != "NAME") {
                                 Box(modifier = Modifier.padding(start = 10.dp)) {
@@ -466,7 +494,7 @@ fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: In
 @Composable
 fun parseText(key: String, value: String, context: Context) {
     Text(
-        "${NAMEtoName(key, context)}: ${value}${NAMEtoUnit(key)}",
+        "${translate(key, context)}: ${translate(value, context)}${NAMEtoUnit(key)}",
         modifier = Modifier.padding(all = 4.dp),
         style = MaterialTheme.typography.bodyMedium
     )
