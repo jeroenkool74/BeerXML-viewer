@@ -201,7 +201,7 @@
     <string name="Rager">Rager</string>
     <string name="Tinseth">Tinseth</string>
     <string name="Garetz">Garetz</string>
-    <string name="False">false</string>
+    <string name="False">False</string>
     <string name="True">True</string>
     <string name="ACID_TO_pH_5_7">Acid to pH of 5.7</string>
     <string name="TIME_AERATED">Time aerated</string>
@@ -262,5 +262,8 @@
     <string name="END_TEMP_PRIMARY">End temperature primary</string>
     <string name="TIME_STARTED">Time started</string>
     <string name="TIME_ENDED">Time ended</string>
-    <string name="minutes">minutes</string>
+    <string name="minutes"> minutes</string>
+    <string name="hour"> hour</string>
+    <string name="volumes_of_co2">Volumes of CO2</string>
+    <string name="days"> days</string>
 </resources>

@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -36,13 +38,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.Role.Companion.Button
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import nl.jkool.beerxmlviewer.ui.theme.BeerXMLViewerTheme
+import org.json.JSONObject
 
 
 val objectToCode: Map<String, Int> =
@@ -341,6 +346,13 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             Text(text = pageTitle)
                         },
                         actions = {
+                            Button(onClick = { quickObtainFile(activity, context) }){
+                                Icon(
+                                    painter = painterResource(R.drawable.download_24px),
+                                    contentDescription = "Download from FTP"
+                                )
+                                Text("Download from FTP")
+                            }
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
@@ -450,7 +462,10 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Recipes(null)
                             }
-                        view.recipesList(innerPadding, context)
+                        view.recipesList(
+                            innerPadding,
+                            context
+                        )
                     }
                     objectToCode["Brew"] -> {
                         val view =

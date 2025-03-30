@@ -3,15 +3,26 @@ package nl.jkool.beerxmlviewer
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text2.BasicSecureTextField
+import androidx.compose.foundation.text2.input.TextFieldState
+import androidx.compose.foundation.text2.input.TextObfuscationMode
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,7 +35,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.sauronsoftware.ftp4j.FTPClient
@@ -76,8 +91,44 @@ fun getSettings(context: Context): Map<String, String> {
     return jsonObject.toStringMap()
 }
 
+fun quickObtainFile(activity: MainActivity, context: Context){
+    val settings = getSettings(context)
+    val siteNull = settings.get("site")
+    val pathNull = settings.get("path")
+    val usernameNull = settings.get("username")
+    val passwordNull = settings.get("password")
+    if (
+        siteNull == null ||
+        pathNull == null ||
+        usernameNull == null ||
+        passwordNull == null
+        ) {
+        Toast.makeText(context, "Unable to sync, some required setting is not set.", Toast.LENGTH_LONG).show()
+        return
+    } else {
+        val site = siteNull.toString()
+        val path = pathNull.toString()
+        val username = usernameNull.toString()
+        val password = passwordNull.toString()
+        Thread {
+            obtainFile(
+                activity,
+                context,
+                site,
+                path,
+                username,
+                password
+            )
+        }.start()
+    }
+}
+
 fun obtainFile(activity: MainActivity, context: Context, site: String, path: String, username: String, password: String) {
     val mFTPClient = FTPClient()
+    activity.runOnUiThread {
+        val message = "Start obtaining data from FTP server, this can take a while…"
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
     try {
         mFTPClient.connect(site, 21)
         mFTPClient.login(username, password)
@@ -266,7 +317,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
     }
     catch (e: Exception) {
         activity.runOnUiThread {
-            Toast.makeText(context, "${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "${e}", Toast.LENGTH_LONG).show()
         }
     }
 }
@@ -354,7 +405,8 @@ fun Settings(activity: MainActivity, context: Context) {
                 TextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("password") }
+                    label = { Text("password") },
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
                 Box(

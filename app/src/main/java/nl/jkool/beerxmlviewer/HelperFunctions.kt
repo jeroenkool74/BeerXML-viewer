@@ -350,6 +350,8 @@ fun translate(input: String, context: Context): String {
         "END_TEMP_PRIMARY" -> stringResource(R.string.END_TEMP_PRIMARY)
         "TIME_STARTED" -> stringResource(R.string.TIME_STARTED)
         "TIME_ENDED" -> stringResource(R.string.TIME_ENDED)
+        "TRUE" -> stringResource(R.string.True)
+        "FALSE" -> stringResource(R.string.False)
         else -> {
             //Toast.makeText(context, input, Toast.LENGTH_LONG).show()
             input
@@ -360,6 +362,11 @@ fun translate(input: String, context: Context): String {
 @Composable
 fun NAMEtoUnit(input: String): String {
     return when (input) {
+        "ACTUAL_EFFICIENCY",
+        "ABV_MIN",
+        "ABV_MAX",
+        "EST_ABV",
+        "ABV",
         "ALPHA",
         "BETA",
         "HSI",
@@ -373,19 +380,108 @@ fun NAMEtoUnit(input: String): String {
         "PROTEIN",
         "ATTENUATION",
         "MAX_IN_BATCH",
+        "HOP_UTILIZATION",
+        "EFFICIENCY",
          "YIELD" -> "%"
         "DIASTATIC_POWER" -> "Linter"
-        "AMOUNT" -> "kg/liter"
+        "AMOUNT" -> "kg/l"
+        "RAMP_TIME",
+        "STEP_TIME",
         "TIME" -> stringResource(R.string.minutes)
+        "CARBONATION_TEMP",
+        "AGE_TEMP",
+        "TERTIARY_TEMP",
+        "SECONDARY_TEMP",
+        "PRIMARY_TEMP",
         "MAX_TEMPERATURE",
+        "TEMP_STEP",
+        "END_TEMP",
+        "GRAIN_TEMP",
+        "TUN_TEMP",
+        "SPARGE_TEMP",
         "MIN_TEMPERATURE" -> "°C"
-
+        "BOIL_SIZE",
+        "TUN_VOLUME",
+        "LAUTER_DEADSPACE",
+        "TOP_UP_KETTLE",
+        "INFUSE_AMOUNT",
+        "BATCH_SIZE" -> "l"
+        "TUN_WEIGHT" -> "kg"
+        "EVAP_RATE" -> "%/" + stringResource(R.string.hour)
+        "POTENTIAL",
+        "OG",
+        "FG",
+        "OG_MIN",
+        "OG_MAX",
+        "FG_MIN",
+        "FG_MAX" -> "SG"
+        "IBU",
+        "IBU_MIN",
+        "IBU_MAX" -> "IBU"
+        "COLOR_MIN",
+        "COLOR_MAX" -> "SRM"
+        "CARBONATION",
+        "CARB_MIN",
+        "CARB_MAX" -> stringResource(R.string.volumes_of_co2)
+        "AGE",
+        "TERTIARY_AGE",
+        "SECONDARY_AGE",
+        "PRIMARY_AGE" -> stringResource(R.string.days)
         else -> ""
     }
 }
 
 @Composable
-fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: Int = 0, topLayer: Boolean = false){
+fun briefRecipeCard(anObject: Any, context: Context){
+    Column {
+
+    }
+}
+
+@Composable
+fun briefRecipeView(anObject: Any, context: Context, groupByString: ((a: JSONObject) -> String)?) {
+    when (anObject) {
+        is JSONArray -> {
+            val list = mutableListOf<JSONObject>()
+            for (i in 0 until anObject.length()) {
+                list.add(anObject.getJSONObject(i))
+            }
+            if (groupByString != null) {
+                val groupMap = list.groupBy { groupByString(it) }
+                val keyList = groupMap.keys.toList().sorted()
+                LazyColumn {
+                    items( keyList ) { item ->
+                        val orderedSubitems = groupMap.get(item)!!.sortedBy { it.getString("NAME") }
+                        Column {
+                            Text(item)
+                            for (e in orderedSubitems) {
+                                briefRecipeCard(e, context)
+                            }
+                        }
+                    }
+                }
+            } else {
+                LazyColumn {
+                    items(list.sortedBy { it.getString("NAME") }) { item ->
+                        briefRecipeCard(item, context)
+                    }
+                }
+            }
+        }
+        is JSONObject -> {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    briefRecipeCard(anObject, context)
+                }
+            }
+        else -> Text("Something went wrong.")
+    }
+}
+
+@Composable
+fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: Int = 0, topLayer: Boolean = false, groupByString: ((a: JSONObject) -> String)? = null){
     when (anObject) {
         is JSONArray -> {
             if (topLayer){
@@ -393,11 +489,25 @@ fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: In
                 for (i in 0 until anObject.length()) {
                     list.add(anObject.getJSONObject(i))
                 }
-                LazyColumn(
-                    //verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(list.sortedBy { it.getString("NAME") }) { item ->
-                        ParseToComposable(item, parent, context,  depth)
+                if (groupByString != null) {
+                    val groupMap = list.groupBy { groupByString(it) }
+                    val keyList = groupMap.keys.toList().sorted()
+                    LazyColumn {
+                        items( keyList ) { item ->
+                            val orderedSubitems = groupMap.get(item)!!.sortedBy { it.getString("NAME") }
+                            Column {
+                                Text(item)
+                                for (e in orderedSubitems) {
+                                    ParseToComposable(e, parent, context, depth)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    LazyColumn {
+                        items(list.sortedBy { it.getString("NAME") }) { item ->
+                            ParseToComposable(item, parent, context, depth)
+                        }
                     }
                 }
             }
