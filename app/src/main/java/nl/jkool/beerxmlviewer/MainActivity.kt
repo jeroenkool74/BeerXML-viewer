@@ -190,6 +190,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         var navState by rememberSaveable { mutableStateOf(1) }
+        val fullInfo = getFullInfoSetting(context)
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
@@ -464,7 +465,8 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             }
                         view.recipesList(
                             innerPadding,
-                            context
+                            context,
+                            fullInfo
                         )
                     }
                     objectToCode["Brew"] -> {
@@ -474,7 +476,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Brews(null)
                             }
-                        view.brewsList(innerPadding, context)
+                        view.brewsList(innerPadding, context, fullInfo)
                     }
                     else -> Text("Something went wrong", modifier = Modifier.padding(innerPadding))
                 }

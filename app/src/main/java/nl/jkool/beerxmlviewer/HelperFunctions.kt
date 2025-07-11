@@ -92,7 +92,7 @@ fun translate(input: String, context: Context): String {
         "NOTES" -> stringResource(R.string.NOTES)
         "VERSION" -> stringResource(R.string.VERSION)
         "ALWAYS_ON_STOCK" -> stringResource(R.string.ALWAYS_ON_STOCK)
-        "ALPHA" -> stringResource(R.string.ALWAYS_ON_STOCK)
+        "ALPHA" -> stringResource(R.string.ALPHA    )
         "TYPE" -> stringResource(R.string.TYPE)
         "FORM" -> stringResource(R.string.FORM)
         "USE" -> stringResource(R.string.USE)
@@ -352,6 +352,12 @@ fun translate(input: String, context: Context): String {
         "TIME_ENDED" -> stringResource(R.string.TIME_ENDED)
         "TRUE" -> stringResource(R.string.True)
         "FALSE" -> stringResource(R.string.False)
+        "Style" -> stringResource(R.string.Style)
+        "Volume" -> stringResource(R.string.Volume)
+        "Amount" -> stringResource(R.string.AMOUNT)
+        "SPARGE_WATER" -> stringResource(R.string.SPARGE_WATER)
+        "WATER_FROM" -> stringResource(R.string.WATER_FROM)
+        "Fill until" -> stringResource(R.string.FILL_UNTIL)
         else -> {
             //Toast.makeText(context, input, Toast.LENGTH_LONG).show()
             input
@@ -387,7 +393,8 @@ fun NAMEtoUnit(input: String): String {
         "AMOUNT" -> "kg/l"
         "RAMP_TIME",
         "STEP_TIME",
-        "TIME" -> stringResource(R.string.minutes)
+        "BOIL_TIME",
+        "TIME" -> " " + stringResource(R.string.minutes)
         "CARBONATION_TEMP",
         "AGE_TEMP",
         "TERTIARY_TEMP",
@@ -414,12 +421,12 @@ fun NAMEtoUnit(input: String): String {
         "OG_MIN",
         "OG_MAX",
         "FG_MIN",
-        "FG_MAX" -> "SG"
+        "FG_MAX" -> " SG"
         "IBU",
         "IBU_MIN",
-        "IBU_MAX" -> "IBU"
+        "IBU_MAX" -> " IBU"
         "COLOR_MIN",
-        "COLOR_MAX" -> "SRM"
+        "COLOR_MAX" -> " SRM"
         "CARBONATION",
         "CARB_MIN",
         "CARB_MAX" -> stringResource(R.string.volumes_of_co2)
@@ -432,14 +439,335 @@ fun NAMEtoUnit(input: String): String {
 }
 
 @Composable
-fun briefRecipeCard(anObject: Any, context: Context){
-    Column {
+fun briefRecipeCard(anObject: JSONObject, context: Context){
+    Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+        var isExpanded by remember { mutableStateOf(false) }
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            color = colorResource(depthToColorId(0)),
+            modifier = Modifier.clickable { isExpanded = !isExpanded }
+        ) {
+            Column(modifier = Modifier.padding(all = 10.dp)) {
+                if (isExpanded) {
+                    Text(
+                        "${anObject.getString("NAME")} ▶",
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(all = 4.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    Text(
+                        "${anObject.getString("NAME")} ▼",
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(all = 4.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                if (isExpanded) {
+                    parseText("Style", anObject.getJSONObject("STYLE").getString("NAME"), context)
+                    parseText("Volume", anObject.getString("DISPLAY_BATCH_SIZE"), context)
+                    parseText("EST_OG", anObject.getString("EST_OG"), context)
+                    parseText("EST_COLOR", anObject.getString("EST_COLOR"), context)
+                    parseText("EFFICIENCY", anObject.getString("EFFICIENCY"), context)
+                    parseText("BOIL_TIME", anObject.getString("BOIL_TIME"), context)
 
+                    val fermentablesList= mutableListOf<JSONObject>()
+                    val fermentablesObject = anObject.getJSONObject("FERMENTABLES").get("FERMENTABLE")
+                    when (fermentablesObject) {
+                        is JSONObject ->
+                            fermentablesList.add(fermentablesObject)
+                        is JSONArray ->
+                            for (i in 0 until fermentablesObject.length()) {
+                                fermentablesList.add(
+                                    fermentablesObject.getJSONObject(i)
+                                )
+                            }
+                    }
+
+                    Text("${translate("WATERS", context)}:")
+                    val watersList= mutableListOf<JSONObject>()
+                    val watersObject = anObject.getJSONObject("WATERS").get("WATER")
+                    when (watersObject) {
+                        is JSONObject ->
+                            watersList.add(watersObject)
+                        is JSONArray ->
+                            for (i in 0 until watersObject.length()) {
+                                watersList.add(
+                                    watersObject.getJSONObject(i)
+                                )
+                            }
+                    }
+                    for (water in watersList) {
+                        Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = colorResource(depthToColorId(1)),
+                            ) {
+                                Column(modifier = Modifier.padding(all = 10.dp)) {
+                                    val values = eitherGetString(water, "NAME", "Can not get water name").flatMap { name ->
+                                        eitherGetString(water, "DISPLAY_AMOUNT", "Can not get amount").map { amount ->
+                                            listOf(name, amount)
+                                        }
+                                    }
+                                    when (values) {
+                                        is Either.Left -> Text(values.value)
+                                        is Either.Right -> {
+                                            val (name, amount) = values.value
+                                            Text(
+                                                "${translate("WATER_FROM", context)} $name",
+                                                modifier = Modifier.padding(all = 4.dp),
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                            parseText("Amount", amount, context)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    val boilSize = anObject.getString("BOIL_SIZE").split(" ")[0].toFloat()
+                    val startAmount = watersList.map { it.getString("AMOUNT").toFloat() }.sum()
+                    val trubChillerLoss = try { anObject.getJSONObject("EQUIPMENT").getString("TRUB_CHILLER_LOSS").toFloat() } catch (e: Exception) { 0.toFloat() }
+                    val grainAbsorption = fermentablesList.filter { it.getString("TYPE").lowercase() in listOf("grain", "adjunct")}.map { it.getString("AMOUNT").toFloat() }.sum()
+                    val spargeWaterAmount = "%.1f".format((grainAbsorption + trubChillerLoss + boilSize) - startAmount)
+                    Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+                        Surface(
+                            shape = MaterialTheme.shapes.medium,
+                            color = colorResource(depthToColorId(1)),
+                        ) {
+                            Column(modifier = Modifier.padding(all = 10.dp)) {
+                                Text(
+                                    "${translate("SPARGE_WATER", context)}",
+                                    modifier = Modifier.padding(all = 4.dp),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                parseText("Amount", "$spargeWaterAmount L", context)
+                                parseText("Fill until", "${"%.1f".format(1.04 * boilSize)} L", context)
+                            }
+                        }
+                    }
+
+                    Text("${translate("FERMENTABLES", context)}:")
+                    for (fermentable in fermentablesList) {
+                        Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = colorResource(depthToColorId(1)),
+                            ) {
+                                Column(modifier = Modifier.padding(all = 10.dp)) {
+                                    val values = eitherGetString(fermentable, "NAME", "Can not get name").flatMap { name ->
+                                        eitherGetString(fermentable, "DISPLAY_AMOUNT", "Can not get amount").flatMap { amount ->
+                                            eitherGetString(fermentable, "SUPPLIER", "Can not get supplier").map { supplier ->
+                                                listOf(name, amount, supplier)
+                                            }
+                                        }
+                                    }
+                                    when (values) {
+                                        is Either.Left -> Text(values.value)
+                                        is Either.Right -> {
+                                            val (name, amount, supplier) = values.value
+                                            parseText("NAME", name, context)
+                                            parseText("Amount", amount, context)
+                                            parseText("SUPPLIER", supplier, context)
+                                            parseText("COLOR", try {fermentable.getString("DISPLAY_COLOR")} catch (e: Exception) { "${0} EBC" }, context)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Text("${translate("MASH_STEPS", context)}:")
+                    val mashList= mutableListOf<JSONObject>()
+                    val mashObject = anObject.getJSONObject("MASH").getJSONObject("MASH_STEPS").get("MASH_STEP")
+                    when (mashObject) {
+                        is JSONObject ->
+                            mashList.add(mashObject)
+                        is JSONArray ->
+                            for (i in 0 until mashObject.length()) {
+                                mashList.add(
+                                    mashObject.getJSONObject(i)
+                                )
+                            }
+                    }
+                    for (mashStep in mashList.sortedBy { it.getString("STEP_TIME") }) {
+                        Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = colorResource(depthToColorId(1)),
+                            ) {
+                                Column(modifier = Modifier.padding(all = 10.dp)) {
+                                    val values = eitherGetString(mashStep, "END_TEMP", "Can not get temp").flatMap { temp ->
+                                        eitherGetString(mashStep, "STEP_TIME", "Can not get time").map { time ->
+                                            listOf(temp, time)
+                                        }
+                                    }
+                                    val name = eitherGetString(mashStep, "NAME", "Can not get name")
+                                    when (values) {
+                                        is Either.Left -> Text(values.value)
+                                        is Either.Right -> {
+                                            val (temp, time) = values.value
+                                            when (name) {
+                                                is Either.Left -> {}
+                                                is Either.Right -> parseText(
+                                                    "NAME",
+                                                    name.value,
+                                                    context
+                                                )
+                                            }
+                                            parseText(
+                                                "Temperature",
+                                                temp,
+                                                context
+                                            )
+                                            parseText(
+                                                "TIME",
+                                                time.split(".")[0],
+                                                context
+                                            )
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                    Text("${translate("HOPS", context)}:")
+                    val hopList = mutableListOf<JSONObject>()
+                    val hopsObject = anObject.getJSONObject("HOPS").get("HOP")
+                    when (hopsObject) {
+                        is JSONObject ->
+                            hopList.add(hopsObject)
+
+                        is JSONArray ->
+                            for (i in 0 until hopsObject.length()) {
+                                hopList.add(
+                                    hopsObject.getJSONObject(i)
+                                )
+                            }
+                    }
+                    val  hopListWithTime = hopList.map { hopObject ->
+                        val time = try { hopObject.getString("TIME") }
+                        catch (e: Exception) { null }
+                        Pair(hopObject, time) }
+                    for (oWithTime in hopListWithTime.sortedByDescending {
+                        val (_, time) = it
+                        time }) {
+                        val (o, time) = oWithTime
+                        Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = colorResource(depthToColorId(1)),
+                            ) {
+                                Column(modifier = Modifier.padding(all = 10.dp)) {
+                                    val values = eitherGetString(
+                                        o, "NAME", "Can not find hop name"
+                                    ).flatMap { name ->
+                                        eitherGetString(
+                                            o,
+                                            "DISPLAY_AMOUNT",
+                                            "Can not find hop display amount"
+                                        ).flatMap { amount ->
+                                            eitherGetString(o, "FORM", "Can not find form").flatMap { form ->
+                                                eitherGetString(
+                                                    o,
+                                                    "ALPHA",
+                                                    "Can not find hop alpha"
+                                                ).map { alpha ->
+                                                    listOf(
+                                                        name,
+                                                        amount,
+                                                        form,
+                                                        alpha
+                                                    )
+                                                    }
+                                                }
+                                            }
+                                    }
+                                    when (values) {
+                                        is Either.Left -> Text(values.value)
+                                        is Either.Right -> {
+                                            val (name, amount, form, alpha) = values.value
+                                            parseText("NAME", name, context)
+                                            parseText(
+                                                "Amount",
+                                                amount,
+                                                context
+                                            )
+                                            parseText("FORM", form, context)
+                                            parseText("ALPHA", alpha, context)
+
+                                            if (time != null) {
+                                                parseText("TIME", time, context)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                    Text("${translate("YEASTS", context)}:")
+                    val yeastsList = mutableListOf<JSONObject>()
+                    val yeastsObject = anObject.getJSONObject("YEASTS").get("YEAST")
+                    when (yeastsObject) {
+                        is JSONObject ->
+                            yeastsList.add(yeastsObject)
+                        is JSONArray ->
+                            for (i in 0 until yeastsObject.length()) {
+                                yeastsList.add(
+                                    yeastsObject.getJSONObject(i)
+                                )
+                            }
+                    }
+                    for (yeast in yeastsList) {
+                        Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = colorResource(depthToColorId(1)),
+                            ) {
+                                Column(modifier = Modifier.padding(all = 10.dp)) {
+                                    val values = eitherGetString(
+                                        yeast,
+                                        "NAME",
+                                        "Can not find yeast name"
+                                    ).flatMap { name ->
+                                        eitherGetDouble(
+                                            yeast,
+                                            "AMOUNT",
+                                            "Can not find yeast amount"
+                                        ).map { amount ->
+                                            listOf(name, (amount * 1000).toInt().toString())
+                                        }
+                                    }
+                                    when (values) {
+                                        is Either.Left<String> -> Text(values.value)
+                                        is Either.Right<List<String>> -> {
+                                            val (name, amount) = values.value
+                                            parseText("NAME", name, context)
+                                            parseText(
+                                                "Amount",
+                                                "$amount g",
+                                                context
+                                            )
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
     }
 }
 
 @Composable
-fun briefRecipeView(anObject: Any, context: Context, groupByString: ((a: JSONObject) -> String)?) {
+fun briefRecipeView(anObject: Any, context: Context, groupByString: ((a: JSONObject) -> String)? = null) {
     when (anObject) {
         is JSONArray -> {
             val list = mutableListOf<JSONObject>()

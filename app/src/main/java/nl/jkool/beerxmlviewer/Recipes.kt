@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
@@ -42,9 +43,9 @@ class Recipes (
     val data: Any?
 ) {
     @Composable
-    fun recipesList(innerPadding: PaddingValues, context: Context ) {
+    fun recipesList(innerPadding: PaddingValues, context: Context, fullInfo: Boolean) {
         Surface(
-            modifier = Modifier.padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
+            modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
             var sorted by remember { mutableStateOf( true ) }
             fun changeSorting() {
@@ -57,26 +58,28 @@ class Recipes (
             Column {
                 if (data != null) {
                     if (sorted) {
-                        Row(modifier = Modifier.padding(bottom = 16.dp, start = 10.dp)) {
+                        Row(modifier = Modifier.padding(bottom = 16.dp, start = 10.dp).clickable { changeSorting() }) {
                             Icon(
                                 painter = painterResource(R.drawable.sort_by_alpha_24px),
                                 contentDescription = "Sort by name"
                             )
-                            Text (" Sort by name", modifier = Modifier.clickable { changeSorting() })
+                            Text (
+                                " Sort by name"
+                            )
                         }
                     } else {
-                        Row(modifier = Modifier.padding(bottom = 16.dp, start = 10.dp)) {
+                        Row(modifier = Modifier.padding(bottom = 16.dp, start = 10.dp).clickable { changeSorting() }) {
                             Icon(
                                 painter = painterResource(R.drawable.swap_vert_24px),
                                 contentDescription = "Sort by beer style"
                             )
                             Text(
-                                " Sort by beer style",
-                                modifier = Modifier.clickable { changeSorting() })
+                                " Sort by beer style"
+                            )
                         }
                     }
-                    if (sorted) {
-                        ParseToComposable(
+                    when {
+                        sorted && fullInfo -> ParseToComposable(
                             data,
                             "",
                             context,
@@ -84,13 +87,17 @@ class Recipes (
                             groupByString = { o: JSONObject ->
                                 o.getJSONObject("STYLE").getString("NAME")
                             })
-                    } else {
-                        ParseToComposable(
-                            data,
-                            "",
-                            context,
-                            topLayer = true
-                        )
+                        sorted && !fullInfo -> briefRecipeView(data, context, groupByString = { o: JSONObject ->
+                            o.getJSONObject("STYLE").getString("NAME")
+                        })
+                        !sorted && fullInfo ->
+                            ParseToComposable(
+                                data,
+                                "",
+                                context,
+                                topLayer = true
+                            )
+                        !sorted && !fullInfo -> briefRecipeView(data, context)
                     }
                 } else {
                     Text("Something went wrong, failed to load content.")

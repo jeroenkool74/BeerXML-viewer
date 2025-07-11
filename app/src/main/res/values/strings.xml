@@ -266,4 +266,10 @@
     <string name="hour"> hour</string>
     <string name="volumes_of_co2">Volumes of CO2</string>
     <string name="days"> days</string>
-</resources>
+    <string name="Style">Style</string>
+    <string name="Volume">Volume</string>
+    <string name="SPARGE_WATER">Sparge water</string>
+    <string name="WATER_FROM">Water from</string>
+    <string name="FILL_UNTIL">Fill until</string>
+    <string name="fullInfo">Show all available information field in recipes and brews</string>
+    </resources>

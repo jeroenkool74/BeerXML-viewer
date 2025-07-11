@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -57,13 +58,18 @@ import java.io.Writer
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-fun storeSettings(context: Context, site: String, path: String, username: String, password: String) {
+fun storeSettings(context: Context, site: String, path: String, username: String, password: String, fullInfo: Boolean) {
     val inputPath = if (path == "") "/" else path
+    val fullInfoStr = when (fullInfo) {
+        true -> "true"
+        false -> "false"
+    }
     val jsObject = JSONObject()
         .put("site", site)
         .put("path", inputPath)
         .put("username", username)
         .put("password", password)
+        .put("fullInfo", fullInfoStr)
     var writer: Writer? = null
     try {
         val out = context.openFileOutput("settings.json", Context.MODE_PRIVATE)
@@ -322,6 +328,8 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
     }
 }
 
+fun getFullInfoSetting(context: Context) = getSettings(context).getOrDefault("fullInfo", "false") == "true"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Settings(activity: MainActivity, context: Context) {
@@ -346,6 +354,11 @@ fun Settings(activity: MainActivity, context: Context) {
             settings.getOrDefault("password", "")
         )
     }
+    var fullInfo by remember {
+        mutableStateOf(
+            settings.getOrDefault("fullInfo", "false") == "true"
+        )
+    }
 
     BeerXMLViewerTheme {
         Scaffold(
@@ -359,7 +372,7 @@ fun Settings(activity: MainActivity, context: Context) {
                                 .padding(start = 16.dp, end = 8.dp)
                                 .clickable {
                                     activity.setContent {
-                                        storeSettings(context, site, path, username, password)
+                                        storeSettings(context, site, path, username, password, fullInfo)
                                         Main(activity, context)
                                     }
                                 }
@@ -425,6 +438,14 @@ fun Settings(activity: MainActivity, context: Context) {
                             modifier = Modifier.padding(4.dp)
                         )
                     }
+                }
+
+                Row(modifier = Modifier.padding(top = 32.dp)) {
+                    Checkbox(
+                        checked = fullInfo,
+                        onCheckedChange = { state -> fullInfo = state }
+                    )
+                    Text(stringResource(R.string.fullInfo))
                 }
             }
         }
