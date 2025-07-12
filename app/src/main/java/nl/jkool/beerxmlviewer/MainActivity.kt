@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
@@ -32,6 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -191,6 +193,16 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
         val scope = rememberCoroutineScope()
         var navState by rememberSaveable { mutableStateOf(1) }
         val fullInfo = getFullInfoSetting(context)
+        val stateHistory = rememberSaveable { mutableListOf<Int>() }
+        BackHandler(enabled = true, onBack = {
+            when {
+                (drawerState.isOpen) -> scope.launch { drawerState.close() }
+
+                stateHistory.isNotEmpty() -> navState = stateHistory.removeAt(stateHistory.lastIndex)
+
+                else -> activity.moveTaskToBack(true)
+            }
+        })
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
@@ -209,7 +221,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Hop"]),
                         onClick = {
-                            navState = objectToCode["Hop"]!!
+                            val newState = objectToCode["Hop"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -221,7 +237,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Fermentable"]),
                         onClick = {
-                            navState = objectToCode["Fermentable"]!!
+                            val newState = objectToCode["Fermentable"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -233,7 +253,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Yeast"]),
                         onClick = {
-                            navState = objectToCode["Yeast"]!!
+                            val newState = objectToCode["Yeast"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -245,7 +269,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Misc"]),
                         onClick = {
-                            navState = objectToCode["Misc"]!!
+                            val newState = objectToCode["Misc"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -257,7 +285,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Water"]),
                         onClick = {
-                            navState = objectToCode["Water"]!!
+                            val newState = objectToCode["Water"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -269,7 +301,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Equipment"]),
                         onClick = {
-                            navState = objectToCode["Equipment"]!!
+                            val newState = objectToCode["Equipment"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -281,7 +317,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Style"]),
                         onClick = {
-                            navState = objectToCode["Style"]!!
+                            val newState = objectToCode["Style"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -293,7 +333,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Mash"]),
                         onClick = {
-                            navState = objectToCode["Mash"]!!
+                            val newState = objectToCode["Mash"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -305,7 +349,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Recipe"]),
                         onClick = {
-                            navState = objectToCode["Recipe"]!!
+                            val newState = objectToCode["Recipe"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )
@@ -317,7 +365,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                         ) },
                         selected = (navState == objectToCode["Brew"]),
                         onClick = {
-                            navState = objectToCode["Brew"]!!
+                            val newState = objectToCode["Brew"]!!
+                            if (navState != newState) {
+                                stateHistory.add(navState)
+                            }
+                            navState = newState
                             scope.launch { drawerState.close() }
                         }
                     )

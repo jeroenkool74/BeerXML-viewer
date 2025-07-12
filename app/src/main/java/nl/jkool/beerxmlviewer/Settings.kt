@@ -2,6 +2,7 @@ package nl.jkool.beerxmlviewer
 
 import android.content.Context
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
@@ -359,6 +360,12 @@ fun Settings(activity: MainActivity, context: Context) {
             settings.getOrDefault("fullInfo", "false") == "true"
         )
     }
+    BackHandler(enabled = true, onBack = {
+        activity.setContent {
+            storeSettings(context, site, path, username, password, fullInfo)
+            Main(activity, context)
+        }
+    })
 
     BeerXMLViewerTheme {
         Scaffold(
