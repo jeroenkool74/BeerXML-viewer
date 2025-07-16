@@ -1,8 +1,6 @@
 TODO
 
- - rename the json objects
- - Create card to give a more nice overview of hop and mash steps and make is sortable
- - Make a Dutch translation for the app
+- Make a Dutch translation for the app
  - Add icon
  - Check if it satisfies all play store requirements
  - Publish in the play store
