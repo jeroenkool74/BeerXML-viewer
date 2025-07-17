@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.json.XML
 import java.io.BufferedReader
+import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.Writer
@@ -100,7 +101,7 @@ class Recipes (
                         !sorted && !fullInfo -> briefRecipeView(data, context)
                     }
                 } else {
-                    Text("Something went wrong, failed to load content.")
+                    Text("No file found. Open a BeerXML file with the button at bottom, or download via FTP in the settings.")
                 }
             }
         }
@@ -152,6 +153,8 @@ fun loadRecipes(context: Context): Recipes {
             jsonObj2.append(line)
         }
         recipes = jsonToRecipesObject(JSONObject(jsonObj2.toString()))
+    } catch (e: FileNotFoundException) {
+        return recipes
     } catch (e: Exception) {
         Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
     }

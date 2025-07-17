@@ -536,20 +536,3 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
         }
     }
 }
-
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BeerXMLViewerTheme {
-        Greeting("Android")
-    }
-}

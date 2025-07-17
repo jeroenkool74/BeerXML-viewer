@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import org.json.JSONObject
 import org.json.XML
 import java.io.BufferedReader
+import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.Writer
@@ -29,7 +30,7 @@ class Fermentables (
             if (data != null) {
                 ParseToComposable(data, "", context, topLayer = true)
             } else {
-                Text("Something went wrong, failed to load content.")
+                Text("No file found. Open a BeerXML file with the button at bottom, or download via FTP in the settings.")
             }
         }
     }
@@ -80,6 +81,8 @@ fun loadFermentables(context: Context): Fermentables {
             jsonObj2.append(line)
         }
         fermentables = jsonToFermentablesObject(JSONObject(jsonObj2.toString()))
+    } catch (e: FileNotFoundException) {
+        return fermentables
     } catch (e: Exception) {
         Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
     }
