@@ -43,8 +43,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.sauronsoftware.ftp4j.FTPClient
@@ -69,7 +73,7 @@ fun storeSettings(context: Context, site: String, path: String, username: String
         false -> "false"
     }
     val jsObject = JSONObject()
-        .put("site", site)
+        .put("site", stripUrl(site))
         .put("path", inputPath)
         .put("username", username)
         .put("password", password)
@@ -85,6 +89,9 @@ fun storeSettings(context: Context, site: String, path: String, username: String
         writer?.close()
     }
 }
+
+fun stripUrl(url: String): String =
+    url.split("ftp://")[0]
 
 fun getSettings(context: Context): Map<String, String> {
     var jsonObject = JSONObject()
@@ -435,11 +442,19 @@ fun Settings(activity: MainActivity, context: Context) {
 //                        .border(1.dp, Color.LightGray, RoundedCornerShape(6.dp))
 //                        .padding(6.dp),
 //                )
+                var revealUntil by remember { mutableStateOf(0L) }
                 TextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        if (it.length > password.length) {
+                            revealUntil = System.currentTimeMillis() + 1000L // show last char for 1s
+                        } else {
+                            revealUntil = 0L
+                        }
+                        password = it
+                    },
                     label = { Text("password") },
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = LastCharRevealTransformation(revealUntil = revealUntil),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password
                     )
@@ -451,7 +466,7 @@ fun Settings(activity: MainActivity, context: Context) {
                     Button(
                         onClick = {
                             Thread {
-                                obtainFile(activity, context, site, path, username, password)
+                                obtainFile(activity, context, stripUrl(site), path, username, password)
                             }.start()
                         }
                     ) {
@@ -472,5 +487,22 @@ fun Settings(activity: MainActivity, context: Context) {
                 }
             }
         }
+    }
+}
+
+class LastCharRevealTransformation(
+    private val maskChar: Char = '•',
+    private val revealUntil: Long = 0L // Unix time in millis
+) : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val now = System.currentTimeMillis()
+        val transformed = if (text.isEmpty()) {
+            ""
+        } else if (now <= revealUntil) {
+            text.text.dropLast(1).map { maskChar }.joinToString("") + text.text.last()
+        } else {
+            text.text.map { maskChar }.joinToString("")
+        }
+        return TransformedText(AnnotatedString(transformed), OffsetMapping.Identity)
     }
 }

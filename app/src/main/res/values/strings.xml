@@ -28,7 +28,7 @@
     <string name="RECOMMEND_MASH">Recommend mash</string>
     <string name="DISPLAY_COLOR">Display color</string>
     <string name="GRAINTYPE">Graintype</string>
-    <string name="ADDED">Mash</string>
+    <string name="ADDED">Added</string>
     <string name="ADJUST_TO_TOTAL_100">Adjust to total 100</string>
     <string name="DI_pH">Deionized water pH</string>
     <string name="ACID_TO_pH">Acid to pH</string>
@@ -43,7 +43,7 @@
     <string name="BEST_FOR">Best for</string>
     <string name="TIMES_CULTURED">Times cultured</string>
     <string name="MAX_REUSE">Maximum reuse</string>
-    <string name="ADD_TO_SECONDARY">Add to secondary</string>
+    <string name="ADD_TO_SECONDARY">Add for a secondary fermentation</string>
     <string name="DISP_MIN_TEMP">Display minimum temperature</string>
     <string name="DISP_MAX_TEMP">Display maximum temperature</string>
     <string name="STARTER_TYPE">Starter type</string>
@@ -58,7 +58,7 @@
     <string name="SULFATE">Sulfate</string>
     <string name="CHLORIDE">Chloride</string>
     <string name="MAGNESIUM">Magnesium</string>
-    <string name="PH">PH</string>
+    <string name="PH">pH</string>
     <string name="TOTAL_ALKALINITY">Total alkalinity</string>
     <string name="DEFAULT_WATER">Default water</string>
     <string name="BOIL_SIZE">Boil size</string>
@@ -120,7 +120,7 @@
     <string name="TUN_TEMP">Tun temperature</string>
     <string name="SPARGE_TEMP">Sparge temperature</string>
     <string name="SG_LAST_RUNNINGS">SG last runnings</string>
-    <string name="PH_LAST_RUNNINGS">PH last runnings</string>
+    <string name="PH_LAST_RUNNINGS">pH last runnings</string>
     <string name="TUN_SPECIFIC_HEATH">Tun specific heath</string>
     <string name="EQUIP_ADJUST">Adjust temperature effects of equipment</string>
     <string name="INFUSE_AMOUNT">Infuse amount</string>
@@ -130,7 +130,7 @@
     <string name="END_TEMP">End temperature</string>
     <string name="WATER_GRAIN_RATIO">Water-grain ratio</string>
     <string name="DECOCTION_AMT">Volume of decoction</string>
-    <string name="DISPLAY_INFUSE_AMT">Infusion amount</string>
+    <string name="DISPLAY_INFUSE_AMT">Display infusion amount</string>
     <string name="DISPLAY_STEP_TEMP">Display step temperature</string>
     <string name="HARVEST_DATE">Harvest date</string>
     <string name="PERCENTAGE">Percentage</string>
@@ -145,7 +145,7 @@
     <string name="DISPLAY_TIME">Display time</string>
     <string name="SODIUM">Sodium</string>
     <string name="DISPLAY_TUN_VOLUME">Display tun volume</string>
-    <string name="DISPLAY_LAUTERDEADSPACE">Display lauterdeadspace</string>
+    <string name="DISPLAY_LAUTERDEADSPACE">Display lauter deadspace</string>
     <string name="ATTENUATION_FACTOR_CONSTANT">Attenuation factor constant</string>
     <string name="MASH_STEPS">Mash steps</string>
     <string name="HOPS">Hops</string>
