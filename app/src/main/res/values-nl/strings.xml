@@ -157,6 +157,7 @@
     <string name="Boil">Koken</string>
     <string name="DryHop">Droge hop</string>
     <string name="Mash">Maischen</string>
+    <string name="MASH">Maischen</string>
     <string name="FirstWort">First wort hopping</string>
     <string name="Aroma">Aroma</string>
     <string name="Bittering">Bitterheid</string>
@@ -273,4 +274,5 @@
     <string name="WATER_FROM">Water van</string>
     <string name="FILL_UNTIL">Vullen tot</string>
     <string name="fullInfo">Toon alle beschikbare informatievelden in recepten en brouwsels</string>
+    <string name="EQUIPMENT">Instalatie</string>
 </resources>

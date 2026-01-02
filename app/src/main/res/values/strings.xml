@@ -156,6 +156,7 @@
     <string name="Boil">Boil</string>
     <string name="DryHop">Dry hop</string>
     <string name="Mash">Mash</string>
+    <string name="MASH">Mash</string>
     <string name="FirstWort">First wort</string>
     <string name="Aroma">Aroma</string>
     <string name="Bittering">Bittering</string>
@@ -272,4 +273,5 @@
     <string name="WATER_FROM">Water from</string>
     <string name="FILL_UNTIL">Fill until</string>
     <string name="fullInfo">Show all available information field in recipes and brews</string>
+    <string name="EQUIPMENT">Equipment</string>
     </resources>
