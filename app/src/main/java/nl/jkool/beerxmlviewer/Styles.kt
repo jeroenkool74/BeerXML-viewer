@@ -23,7 +23,7 @@ class Styles (
     val data: Any?
 ) {
     @Composable
-    fun stylesList(innerPadding: PaddingValues, context: Context) {
+    fun StylesList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -72,15 +72,8 @@ fun jsonToStylesObject(input: JSONObject?): Styles {
 
 fun loadStyles(context: Context): Styles {
     var styles = Styles(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("styles.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        styles = jsonToStylesObject(JSONObject(jsonObj2.toString()))
+        styles = jsonToStylesObject(JSONObject(readInternalFile(context, "styles.json")))
     } catch (e: FileNotFoundException) {
         return styles
     } catch (e: Exception) {
@@ -98,10 +91,8 @@ fun xmlUriToStyles(uri: Uri?, context: Context): Styles {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded styles from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToStylesObject(jsonObj) as Styles
+            return jsonToStylesObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load styles from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Styles(null)
         }
     }

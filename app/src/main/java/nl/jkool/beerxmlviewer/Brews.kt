@@ -32,7 +32,7 @@ class Brews (
     val data: Any?
 ) {
     @Composable
-    fun brewsList(innerPadding: PaddingValues, context: Context, fullInfo: Boolean) {
+    fun BrewsList(innerPadding: PaddingValues, context: Context, fullInfo: Boolean) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -74,10 +74,10 @@ class Brews (
                             context,
                             topLayer = true,
                             groupByString = { o: JSONObject ->
-                                o.getJSONObject("STYLE").getString("NAME")
+                                o.styleName()
                             })
-                        sorted && !fullInfo -> briefRecipeView(data, context, groupByString = { o: JSONObject ->
-                            o.getJSONObject("STYLE").getString("NAME")
+                        sorted && !fullInfo -> BriefRecipeView(data, context, groupByString = { o: JSONObject ->
+                            o.styleName()
                         })
                         !sorted && fullInfo ->
                             ParseToComposable(
@@ -86,7 +86,7 @@ class Brews (
                                 context,
                                 topLayer = true
                             )
-                        !sorted && !fullInfo -> briefRecipeView(data, context)
+                        !sorted && !fullInfo -> BriefRecipeView(data, context)
                     }
                 } else {
                     Text("No file found. Open a BeerXML file with the button at bottom, or download via FTP in the settings.")
@@ -132,15 +132,8 @@ fun jsonToBrewsObject(input: JSONObject?): Brews {
 
 fun loadBrews(context: Context): Brews {
     var brews = Brews(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("brews.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        brews = jsonToBrewsObject(JSONObject(jsonObj2.toString()))
+        brews = jsonToBrewsObject(JSONObject(readInternalFile(context, "brews.json")))
     } catch (e: FileNotFoundException) {
         return brews
     } catch (e: Exception) {
@@ -158,10 +151,8 @@ fun xmlUriToBrews(uri: Uri?, context: Context): Brews {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded brews from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToBrewsObject(jsonObj) as Brews
+            return jsonToBrewsObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load brews from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Brews(null)
         }
     }

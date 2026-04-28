@@ -23,7 +23,7 @@ class Fermentables (
     val data: Any?
 ) {
     @Composable
-    fun fermentablesList(innerPadding: PaddingValues, context: Context) {
+    fun FermentablesList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -72,15 +72,8 @@ fun jsonToFermentablesObject(input: JSONObject?): Fermentables {
 
 fun loadFermentables(context: Context): Fermentables {
     var fermentables = Fermentables(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("fermentables.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        fermentables = jsonToFermentablesObject(JSONObject(jsonObj2.toString()))
+        fermentables = jsonToFermentablesObject(JSONObject(readInternalFile(context, "fermentables.json")))
     } catch (e: FileNotFoundException) {
         return fermentables
     } catch (e: Exception) {
@@ -98,10 +91,8 @@ fun xmlUriToFermentables(uri: Uri?, context: Context): Fermentables {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded fermentables from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToFermentablesObject(jsonObj) as Fermentables
+            return jsonToFermentablesObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load fermentables from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Fermentables(null)
         }
     }

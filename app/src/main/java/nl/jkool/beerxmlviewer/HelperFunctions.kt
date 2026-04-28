@@ -26,6 +26,29 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 
+fun readInternalFile(context: Context, fileName: String): String =
+    context.openFileInput(fileName).bufferedReader().use { it.readText() }
+
+fun JSONObject.displayName(defaultName: String = "Unnamed"): String =
+    optString("NAME").takeIf { it.isNotBlank() } ?: defaultName.ifBlank { "Unnamed" }
+
+fun JSONObject.styleName(): String =
+    optJSONObject("STYLE")?.optString("NAME")?.takeIf { it.isNotBlank() } ?: "Unknown style"
+
+fun JSONObject.optNonBlankString(name: String): String? =
+    optString(name).takeIf { it.isNotBlank() }
+
+fun jsonObjectList(input: Any?): List<JSONObject> =
+    when (input) {
+        is JSONObject -> listOf(input)
+        is JSONArray -> (0 until input.length()).mapNotNull { input.optJSONObject(it) }
+        else -> emptyList()
+    }
+
+private fun firstFloat(input: String?): Float? =
+    input?.split(" ")?.firstOrNull()?.replace(',', '.')?.toFloatOrNull()
+
+
 fun JSONObject.toStringMap(): Map<String, String> {
     val map = mutableMapOf<String, String>()
     for (key in keys()) {
@@ -236,6 +259,7 @@ fun translate(input: String, context: Context): String {
         "DISPLAY_LAUTERDEADSPACE" -> stringResource(R.string.DISPLAY_LAUTERDEADSPACE)
         "ATTENUATION_FACTOR_CONSTANT" -> stringResource(R.string.ATTENUATION_FACTOR_CONSTANT)
         "MASH_STEPS" -> stringResource(R.string.MASH_STEPS)
+        "MASH" -> stringResource(R.string.MASH)
         "HOPS" -> stringResource(R.string.HOPS)
         "FERMENTABLES" -> stringResource(R.string.FERMENTABLES)
         "MISCS" -> stringResource(R.string.MISCS)
@@ -352,6 +376,7 @@ fun translate(input: String, context: Context): String {
         "TIME_ENDED" -> stringResource(R.string.TIME_ENDED)
         "TRUE" -> stringResource(R.string.True)
         "FALSE" -> stringResource(R.string.False)
+        "EQUIPMENT" -> stringResource(R.string.EQUIPMENT)
         "Style" -> stringResource(R.string.Style)
         "Volume" -> stringResource(R.string.Volume)
         "Amount" -> stringResource(R.string.AMOUNT)
@@ -366,7 +391,7 @@ fun translate(input: String, context: Context): String {
 }
 
 @Composable
-fun NAMEtoUnit(input: String): String {
+fun nameToUnit(input: String): String {
     return when (input) {
         "ACTUAL_EFFICIENCY",
         "ABV_MIN",
@@ -439,7 +464,7 @@ fun NAMEtoUnit(input: String): String {
 }
 
 @Composable
-fun briefRecipeCard(anObject: JSONObject, context: Context){
+fun BriefRecipeCard(anObject: JSONObject, context: Context){
     Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
         var isExpanded by remember { mutableStateOf(false) }
         Surface(
@@ -450,52 +475,32 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
             Column(modifier = Modifier.padding(all = 10.dp)) {
                 if (isExpanded) {
                     Text(
-                        "${anObject.getString("NAME")} ▶",
+                        "${anObject.displayName("Unnamed recipe")} ▶",
                         fontSize = 18.sp,
                         modifier = Modifier.padding(all = 4.dp),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 } else {
                     Text(
-                        "${anObject.getString("NAME")} ▼",
+                        "${anObject.displayName("Unnamed recipe")} ▼",
                         fontSize = 18.sp,
                         modifier = Modifier.padding(all = 4.dp),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
                 if (isExpanded) {
-                    parseText("Style", anObject.getJSONObject("STYLE").getString("NAME"), context)
-                    parseText("Volume", anObject.getString("DISPLAY_BATCH_SIZE"), context)
-                    parseText("EST_OG", anObject.getString("EST_OG"), context)
-                    parseText("EST_COLOR", anObject.getString("EST_COLOR"), context)
-                    parseText("EFFICIENCY", anObject.getString("EFFICIENCY"), context)
-                    parseText("BOIL_TIME", anObject.getString("BOIL_TIME"), context)
+                    OptionalText("Style", anObject.styleName(), context)
+                    OptionalText("Volume", anObject.optNonBlankString("DISPLAY_BATCH_SIZE"), context)
+                    OptionalText("EST_OG", anObject.optNonBlankString("EST_OG"), context)
+                    OptionalText("EST_COLOR", anObject.optNonBlankString("EST_COLOR"), context)
+                    OptionalText("EFFICIENCY", anObject.optNonBlankString("EFFICIENCY"), context)
+                    OptionalText("BOIL_TIME", anObject.optNonBlankString("BOIL_TIME"), context)
 
-                    val fermentablesList= mutableListOf<JSONObject>()
-                    val fermentablesObject = anObject.getJSONObject("FERMENTABLES").get("FERMENTABLE")
-                    when (fermentablesObject) {
-                        is JSONObject ->
-                            fermentablesList.add(fermentablesObject)
-                        is JSONArray ->
-                            for (i in 0 until fermentablesObject.length()) {
-                                fermentablesList.add(
-                                    fermentablesObject.getJSONObject(i)
-                                )
-                            }
-                    }
+                    val fermentablesList = jsonObjectList(anObject.optJSONObject("FERMENTABLES")?.opt("FERMENTABLE"))
 
-                    Text("${translate("WATERS", context)}:")
-                    val watersList= mutableListOf<JSONObject>()
-                    val watersObject = anObject.getJSONObject("WATERS").get("WATER")
-                    when (watersObject) {
-                        is JSONObject ->
-                            watersList.add(watersObject)
-                        is JSONArray ->
-                            for (i in 0 until watersObject.length()) {
-                                watersList.add(
-                                    watersObject.getJSONObject(i)
-                                )
-                            }
+                    val watersList = jsonObjectList(anObject.optJSONObject("WATERS")?.opt("WATER"))
+                    if (watersList.isNotEmpty()) {
+                        Text("${translate("WATERS", context)}:")
                     }
                     for (water in watersList) {
                         Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
@@ -518,36 +523,45 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
                                                 modifier = Modifier.padding(all = 4.dp),
                                                 style = MaterialTheme.typography.bodyMedium
                                             )
-                                            parseText("Amount", amount, context)
+                                            ParseText("Amount", amount, context)
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    val boilSize = anObject.getString("BOIL_SIZE").split(" ")[0].toFloat()
-                    val startAmount = watersList.map { it.getString("AMOUNT").toFloat() }.sum()
-                    val trubChillerLoss = try { anObject.getJSONObject("EQUIPMENT").getString("TRUB_CHILLER_LOSS").toFloat() } catch (e: Exception) { 0.toFloat() }
-                    val grainAbsorption = fermentablesList.filter { it.getString("TYPE").lowercase() in listOf("grain", "adjunct")}.map { it.getString("AMOUNT").toFloat() }.sum()
-                    val spargeWaterAmount = "%.1f".format((grainAbsorption + trubChillerLoss + boilSize) - startAmount)
-                    Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
-                        Surface(
-                            shape = MaterialTheme.shapes.medium,
-                            color = colorResource(depthToColorId(1)),
-                        ) {
-                            Column(modifier = Modifier.padding(all = 10.dp)) {
-                                Text(
-                                    "${translate("SPARGE_WATER", context)}",
-                                    modifier = Modifier.padding(all = 4.dp),
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                parseText("Amount", "$spargeWaterAmount L", context)
-                                parseText("Fill until", "${"%.1f".format(1.04 * boilSize)} L", context)
+                    val boilSize = firstFloat(anObject.optNonBlankString("BOIL_SIZE"))
+                    if (boilSize != null && watersList.isNotEmpty()) {
+                        val startAmount = watersList.mapNotNull { firstFloat(it.optNonBlankString("AMOUNT")) }.sum()
+                        val trubChillerLoss = firstFloat(
+                            anObject.optJSONObject("EQUIPMENT")?.optNonBlankString("TRUB_CHILLER_LOSS")
+                        ) ?: 0f
+                        val grainAbsorption = fermentablesList
+                            .filter { it.optNonBlankString("TYPE")?.lowercase() in listOf("grain", "adjunct") }
+                            .mapNotNull { firstFloat(it.optNonBlankString("AMOUNT")) }
+                            .sum()
+                        val spargeWaterAmount = "%.1f".format((grainAbsorption + trubChillerLoss + boilSize) - startAmount)
+                        Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = colorResource(depthToColorId(1)),
+                            ) {
+                                Column(modifier = Modifier.padding(all = 10.dp)) {
+                                    Text(
+                                        "${translate("SPARGE_WATER", context)}",
+                                        modifier = Modifier.padding(all = 4.dp),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    ParseText("Amount", "$spargeWaterAmount L", context)
+                                    ParseText("Fill until", "${"%.1f".format(1.04 * boilSize)} L", context)
+                                }
                             }
                         }
                     }
 
-                    Text("${translate("FERMENTABLES", context)}:")
+                    if (fermentablesList.isNotEmpty()) {
+                        Text("${translate("FERMENTABLES", context)}:")
+                    }
                     for (fermentable in fermentablesList) {
                         Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
                             Surface(
@@ -566,10 +580,10 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
                                         is Either.Left -> Text(values.value)
                                         is Either.Right -> {
                                             val (name, amount, supplier) = values.value
-                                            parseText("NAME", name, context)
-                                            parseText("Amount", amount, context)
-                                            parseText("SUPPLIER", supplier, context)
-                                            parseText("COLOR", try {fermentable.getString("DISPLAY_COLOR")} catch (e: Exception) { "${0} EBC" }, context)
+                                            ParseText("NAME", name, context)
+                                            ParseText("Amount", amount, context)
+                                            ParseText("SUPPLIER", supplier, context)
+                                            ParseText("COLOR", try {fermentable.getString("DISPLAY_COLOR")} catch (e: Exception) { "${0} EBC" }, context)
                                         }
                                     }
                                 }
@@ -577,20 +591,13 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
                         }
                     }
 
-                    Text("${translate("MASH_STEPS", context)}:")
-                    val mashList= mutableListOf<JSONObject>()
-                    val mashObject = anObject.getJSONObject("MASH").getJSONObject("MASH_STEPS").get("MASH_STEP")
-                    when (mashObject) {
-                        is JSONObject ->
-                            mashList.add(mashObject)
-                        is JSONArray ->
-                            for (i in 0 until mashObject.length()) {
-                                mashList.add(
-                                    mashObject.getJSONObject(i)
-                                )
-                            }
+                    val mashList = jsonObjectList(
+                        anObject.optJSONObject("MASH")?.optJSONObject("MASH_STEPS")?.opt("MASH_STEP")
+                    )
+                    if (mashList.isNotEmpty()) {
+                        Text("${translate("MASH_STEPS", context)}:")
                     }
-                    for (mashStep in mashList.sortedBy { it.getString("STEP_TIME") }) {
+                    for (mashStep in mashList.sortedBy { firstFloat(it.optNonBlankString("STEP_TIME")) ?: Float.MAX_VALUE }) {
                         Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
                             Surface(
                                 shape = MaterialTheme.shapes.medium,
@@ -609,18 +616,18 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
                                             val (temp, time) = values.value
                                             when (name) {
                                                 is Either.Left -> {}
-                                                is Either.Right -> parseText(
+                                                is Either.Right -> ParseText(
                                                     "NAME",
                                                     name.value,
                                                     context
                                                 )
                                             }
-                                            parseText(
+                                            ParseText(
                                                 "Temperature",
                                                 temp,
                                                 context
                                             )
-                                            parseText(
+                                            ParseText(
                                                 "TIME",
                                                 time.split(".")[0],
                                                 context
@@ -633,23 +640,12 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
                         }
                     }
 
-                    Text("${translate("HOPS", context)}:")
-                    val hopList = mutableListOf<JSONObject>()
-                    val hopsObject = anObject.getJSONObject("HOPS").get("HOP")
-                    when (hopsObject) {
-                        is JSONObject ->
-                            hopList.add(hopsObject)
-
-                        is JSONArray ->
-                            for (i in 0 until hopsObject.length()) {
-                                hopList.add(
-                                    hopsObject.getJSONObject(i)
-                                )
-                            }
+                    val hopList = jsonObjectList(anObject.optJSONObject("HOPS")?.opt("HOP"))
+                    if (hopList.isNotEmpty()) {
+                        Text("${translate("HOPS", context)}:")
                     }
                     val  hopListWithTime = hopList.map { hopObject ->
-                        val time = try { hopObject.getString("TIME") }
-                        catch (e: Exception) { null }
+                        val time = hopObject.optNonBlankString("TIME")
                         Pair(hopObject, time) }
                     for (oWithTime in hopListWithTime.sortedByDescending {
                         val (_, time) = it
@@ -689,17 +685,17 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
                                         is Either.Left -> Text(values.value)
                                         is Either.Right -> {
                                             val (name, amount, form, alpha) = values.value
-                                            parseText("NAME", name, context)
-                                            parseText(
+                                            ParseText("NAME", name, context)
+                                            ParseText(
                                                 "Amount",
                                                 amount,
                                                 context
                                             )
-                                            parseText("FORM", form, context)
-                                            parseText("ALPHA", alpha, context)
+                                            ParseText("FORM", form, context)
+                                            ParseText("ALPHA", alpha, context)
 
                                             if (time != null) {
-                                                parseText("TIME", time, context)
+                                                ParseText("TIME", time, context)
                                             }
                                         }
                                     }
@@ -709,18 +705,9 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
                     }
 
 
-                    Text("${translate("YEASTS", context)}:")
-                    val yeastsList = mutableListOf<JSONObject>()
-                    val yeastsObject = anObject.getJSONObject("YEASTS").get("YEAST")
-                    when (yeastsObject) {
-                        is JSONObject ->
-                            yeastsList.add(yeastsObject)
-                        is JSONArray ->
-                            for (i in 0 until yeastsObject.length()) {
-                                yeastsList.add(
-                                    yeastsObject.getJSONObject(i)
-                                )
-                            }
+                    val yeastsList = jsonObjectList(anObject.optJSONObject("YEASTS")?.opt("YEAST"))
+                    if (yeastsList.isNotEmpty()) {
+                        Text("${translate("YEASTS", context)}:")
                     }
                     for (yeast in yeastsList) {
                         Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
@@ -746,8 +733,8 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
                                         is Either.Left<String> -> Text(values.value)
                                         is Either.Right<List<String>> -> {
                                             val (name, amount) = values.value
-                                            parseText("NAME", name, context)
-                                            parseText(
+                                            ParseText("NAME", name, context)
+                                            ParseText(
                                                 "Amount",
                                                 "$amount g",
                                                 context
@@ -767,7 +754,7 @@ fun briefRecipeCard(anObject: JSONObject, context: Context){
 }
 
 @Composable
-fun briefRecipeView(anObject: Any, context: Context, groupByString: ((a: JSONObject) -> String)? = null) {
+fun BriefRecipeView(anObject: Any, context: Context, groupByString: ((a: JSONObject) -> String)? = null) {
     when (anObject) {
         is JSONArray -> {
             val list = mutableListOf<JSONObject>()
@@ -779,19 +766,19 @@ fun briefRecipeView(anObject: Any, context: Context, groupByString: ((a: JSONObj
                 val keyList = groupMap.keys.toList().sorted()
                 LazyColumn {
                     items( keyList ) { item ->
-                        val orderedSubitems = groupMap.get(item)!!.sortedBy { it.getString("NAME") }
+                        val orderedSubitems = groupMap.get(item)!!.sortedBy { it.displayName() }
                         Column {
                             Text(item)
                             for (e in orderedSubitems) {
-                                briefRecipeCard(e, context)
+                                BriefRecipeCard(e, context)
                             }
                         }
                     }
                 }
             } else {
                 LazyColumn {
-                    items(list.sortedBy { it.getString("NAME") }) { item ->
-                        briefRecipeCard(item, context)
+                    items(list.sortedBy { it.displayName() }) { item ->
+                        BriefRecipeCard(item, context)
                     }
                 }
             }
@@ -801,7 +788,7 @@ fun briefRecipeView(anObject: Any, context: Context, groupByString: ((a: JSONObj
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
                 ) {
-                    briefRecipeCard(anObject, context)
+                    BriefRecipeCard(anObject, context)
                 }
             }
         else -> Text("Something went wrong.")
@@ -822,7 +809,7 @@ fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: In
                     val keyList = groupMap.keys.toList().sorted()
                     LazyColumn {
                         items( keyList ) { item ->
-                            val orderedSubitems = groupMap.get(item)!!.sortedBy { it.getString("NAME") }
+                            val orderedSubitems = groupMap.get(item)!!.sortedBy { it.displayName() }
                             Column {
                                 Text(item)
                                 for (e in orderedSubitems) {
@@ -833,7 +820,7 @@ fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: In
                     }
                 } else {
                     LazyColumn {
-                        items(list.sortedBy { it.getString("NAME") }) { item ->
+                        items(list.sortedBy { it.displayName() }) { item ->
                             ParseToComposable(item, parent, context, depth)
                         }
                     }
@@ -859,7 +846,7 @@ fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: In
                 }
             } else {
                 val name = try {
-                    anObject.getString("NAME")
+                    anObject.displayName(parent)
                 } catch (e: Exception) {
                     parent
                 }
@@ -923,23 +910,30 @@ fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: In
             }
         }
         else -> {
-            parseText(parent, anObject.toString(), context)
+            ParseText(parent, anObject.toString(), context)
         }
     }
 }
 
 
 @Composable
-fun parseText(key: String, value: String, context: Context) {
+fun ParseText(key: String, value: String, context: Context) {
     Text(
-        "${translate(key, context)}: ${translate(value, context)}${NAMEtoUnit(key)}",
+        "${translate(key, context)}: ${translate(value, context)}${nameToUnit(key)}",
         modifier = Modifier.padding(all = 4.dp),
         style = MaterialTheme.typography.bodyMedium
     )
 }
 
 @Composable
-fun mapCard(map: Map<String, String>, context: Context) {
+fun OptionalText(key: String, value: String?, context: Context) {
+    if (!value.isNullOrBlank()) {
+        ParseText(key, value, context)
+    }
+}
+
+@Composable
+fun MapCard(map: Map<String, String>, context: Context) {
 
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -963,7 +957,7 @@ fun mapCard(map: Map<String, String>, context: Context) {
             if (isExpanded) {
                 for ((key, value) in map) {
                     if (key != "NAME") {
-                        parseText(key, value, context)
+                        ParseText(key, value, context)
                     }
                 }
             }

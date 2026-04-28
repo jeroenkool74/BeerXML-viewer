@@ -33,8 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -42,14 +41,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.semantics.Role.Companion.Button
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import nl.jkool.beerxmlviewer.ui.theme.BeerXMLViewerTheme
-import org.json.JSONObject
 
 
 val objectToCode: Map<String, Int> =
@@ -93,95 +88,42 @@ class MainActivity : ComponentActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(
-        requestCode: Int, resultCode: Int, resultData: Intent?) {
-        super.onActivityResult(requestCode, resultCode, resultData)
-        if (resultCode == RESULT_OK
-        ) {
-            when (requestCode) {
-                objectToCode["Hop"] -> {
-                    resultData?.data?.also { uri ->
-                        val hops = xmlUriToHops(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                        Toast.makeText(applicationContext, "Stored hops", Toast.LENGTH_LONG).show()
-                    }
-                }
-                objectToCode["Fermentable"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToFermentables(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                objectToCode["Yeast"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToYeasts(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                objectToCode["Misc"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToMiscs(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                objectToCode["Water"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToWaters(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                objectToCode["Equipment"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToEquipments(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                objectToCode["Style"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToStyles(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                objectToCode["Mash"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToMashs(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                objectToCode["Recipe"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToRecipes(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                objectToCode["Brew"] -> {
-                    resultData?.data?.also { uri ->
-                        xmlUriToBrews(uri, applicationContext).store(applicationContext)
-                        setContent {
-                            Main(this, applicationContext, requestCode)
-                        }
-                    }
-                }
-                else -> Toast.makeText(applicationContext, "Missing requestCode", Toast.LENGTH_LONG).show()
-            }
+        requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK) {
+            importXmlFile(requestCode, data)
         }
+    }
+
+    private fun importXmlFile(requestCode: Int, resultData: Intent?) {
+        val uri = resultData?.data ?: return
+        Thread {
+            val stored = when (requestCode) {
+                objectToCode["Hop"] -> xmlUriToHops(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Fermentable"] -> xmlUriToFermentables(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Yeast"] -> xmlUriToYeasts(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Misc"] -> xmlUriToMiscs(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Water"] -> xmlUriToWaters(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Equipment"] -> xmlUriToEquipments(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Style"] -> xmlUriToStyles(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Mash"] -> xmlUriToMashs(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Recipe"] -> xmlUriToRecipes(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                objectToCode["Brew"] -> xmlUriToBrews(uri, applicationContext).also { it.store(applicationContext) }.data != null
+                else -> null
+            }
+            runOnUiThread {
+                when (stored) {
+                    null -> Toast.makeText(applicationContext, "Missing requestCode", Toast.LENGTH_LONG).show()
+                    true -> {
+                        setContent {
+                            Main(this@MainActivity, applicationContext, requestCode)
+                        }
+                        Toast.makeText(applicationContext, "Stored ${codeToObject[requestCode] ?: "file"}", Toast.LENGTH_LONG).show()
+                    }
+                    false -> Toast.makeText(applicationContext, "Failed to load ${codeToObject[requestCode] ?: "file"}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }.start()
     }
 }
 
@@ -191,7 +133,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
     BeerXMLViewerTheme {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
-        var navState by rememberSaveable { mutableStateOf(1) }
+        var navState by rememberSaveable { mutableIntStateOf(initView) }
         val fullInfo = getFullInfoSetting(context)
         val stateHistory = rememberSaveable { mutableListOf<Int>() }
         BackHandler(enabled = true, onBack = {
@@ -420,9 +362,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                 },
                 floatingActionButton = {
                     FloatingActionButton(onClick = {
-                        runBlocking {
-                            activity.openFile(navState)
-                        }
+                        activity.openFile(navState)
                     }) {
                         Row(modifier = Modifier.padding(10.dp)) {
                             Icon(
@@ -443,7 +383,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                                 Toast.makeText(context, "Failed to load hops", Toast.LENGTH_LONG).show()
                                 Hops(null)
                             }
-                        view.hopsList(innerPadding, context)
+                        view.HopsList(innerPadding, context)
                     }
                     objectToCode["Fermentable"] -> {
                         val view =
@@ -452,7 +392,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Fermentables(null)
                             }
-                        view.fermentablesList(innerPadding, context)
+                        view.FermentablesList(innerPadding, context)
                     }
                     objectToCode["Yeast"] -> {
                         val view =
@@ -461,7 +401,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Yeasts(null)
                             }
-                        view.yeastsList(innerPadding, context)
+                        view.YeastsList(innerPadding, context)
                     }
                     objectToCode["Misc"] -> {
                         val view =
@@ -470,7 +410,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Miscs(null)
                             }
-                        view.miscsList(innerPadding, context)
+                        view.MiscsList(innerPadding, context)
                     }
                     objectToCode["Water"] -> {
                         val view =
@@ -479,7 +419,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Waters(null)
                             }
-                        view.watersList(innerPadding, context)
+                        view.WatersList(innerPadding, context)
                     }
                     objectToCode["Equipment"] -> {
                         val view =
@@ -488,7 +428,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Equipments(null)
                             }
-                        view.equipmentsList(innerPadding, context)
+                        view.EquipmentsList(innerPadding, context)
                     }
                     objectToCode["Style"] -> {
                         val view =
@@ -497,7 +437,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Styles(null)
                             }
-                        view.stylesList(innerPadding, context)
+                        view.StylesList(innerPadding, context)
                     }
                     objectToCode["Mash"] -> {
                         val view =
@@ -506,7 +446,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Mashs(null)
                             }
-                        view.mashsList(innerPadding, context)
+                        view.MashsList(innerPadding, context)
                     }
                     objectToCode["Recipe"] -> {
                         val view =
@@ -515,7 +455,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Recipes(null)
                             }
-                        view.recipesList(
+                        view.RecipesList(
                             innerPadding,
                             context,
                             fullInfo
@@ -528,7 +468,7 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             } catch (e: Exception){
                                 Brews(null)
                             }
-                        view.brewsList(innerPadding, context, fullInfo)
+                        view.BrewsList(innerPadding, context, fullInfo)
                     }
                     else -> Text("Something went wrong", modifier = Modifier.padding(innerPadding))
                 }

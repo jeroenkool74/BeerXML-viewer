@@ -23,7 +23,7 @@ class Mashs (
     val data: Any?
 ) {
     @Composable
-    fun mashsList(innerPadding: PaddingValues, context: Context) {
+    fun MashsList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -72,15 +72,8 @@ fun jsonToMashsObject(input: JSONObject?): Mashs {
 
 fun loadMashs(context: Context): Mashs {
     var mashs = Mashs(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("mashs.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        mashs = jsonToMashsObject(JSONObject(jsonObj2.toString()))
+        mashs = jsonToMashsObject(JSONObject(readInternalFile(context, "mashs.json")))
     } catch (e: FileNotFoundException) {
         return mashs
     } catch (e: Exception) {
@@ -98,10 +91,8 @@ fun xmlUriToMashs(uri: Uri?, context: Context): Mashs {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded mashs from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToMashsObject(jsonObj) as Mashs
+            return jsonToMashsObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load mashs from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Mashs(null)
         }
     }

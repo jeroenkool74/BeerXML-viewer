@@ -23,7 +23,7 @@ class Hops (
     val data: Any?
 ) {
     @Composable
-    fun hopsList(innerPadding: PaddingValues, context: Context) {
+    fun HopsList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -72,15 +72,8 @@ fun jsonToHopsObject(input: JSONObject?): Hops {
 
 fun loadHops(context: Context): Hops {
     var hops = Hops(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("hops.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        hops = jsonToHopsObject(JSONObject(jsonObj2.toString()))
+        hops = jsonToHopsObject(JSONObject(readInternalFile(context, "hops.json")))
     } catch (e: FileNotFoundException) {
         return hops
     } catch (e: Exception) {
@@ -98,10 +91,8 @@ fun xmlUriToHops(uri: Uri?, context: Context): Hops {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded hops from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToHopsObject(jsonObj) as Hops
+            return jsonToHopsObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load hops from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Hops(null)
         }
     }

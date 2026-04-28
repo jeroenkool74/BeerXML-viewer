@@ -23,7 +23,7 @@ class Yeasts (
     val data: Any?
 ) {
     @Composable
-    fun yeastsList(innerPadding: PaddingValues, context: Context) {
+    fun YeastsList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -72,15 +72,8 @@ fun jsonToYeastsObject(input: JSONObject?): Yeasts {
 
 fun loadYeasts(context: Context): Yeasts {
     var yeasts = Yeasts(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("yeasts.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        yeasts = jsonToYeastsObject(JSONObject(jsonObj2.toString()))
+        yeasts = jsonToYeastsObject(JSONObject(readInternalFile(context, "yeasts.json")))
     } catch (e: FileNotFoundException) {
         return yeasts
     } catch (e: Exception) {
@@ -98,10 +91,8 @@ fun xmlUriToYeasts(uri: Uri?, context: Context): Yeasts {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded yeasts from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToYeastsObject(jsonObj) as Yeasts
+            return jsonToYeastsObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load yeasts from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Yeasts(null)
         }
     }

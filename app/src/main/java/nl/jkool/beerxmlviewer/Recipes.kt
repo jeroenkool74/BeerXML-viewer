@@ -44,7 +44,7 @@ class Recipes (
     val data: Any?
 ) {
     @Composable
-    fun recipesList(innerPadding: PaddingValues, context: Context, fullInfo: Boolean) {
+    fun RecipesList(innerPadding: PaddingValues, context: Context, fullInfo: Boolean) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -86,10 +86,10 @@ class Recipes (
                             context,
                             topLayer = true,
                             groupByString = { o: JSONObject ->
-                                o.getJSONObject("STYLE").getString("NAME")
+                                o.styleName()
                             })
-                        sorted && !fullInfo -> briefRecipeView(data, context, groupByString = { o: JSONObject ->
-                            o.getJSONObject("STYLE").getString("NAME")
+                        sorted && !fullInfo -> BriefRecipeView(data, context, groupByString = { o: JSONObject ->
+                            o.styleName()
                         })
                         !sorted && fullInfo ->
                             ParseToComposable(
@@ -98,7 +98,7 @@ class Recipes (
                                 context,
                                 topLayer = true
                             )
-                        !sorted && !fullInfo -> briefRecipeView(data, context)
+                        !sorted && !fullInfo -> BriefRecipeView(data, context)
                     }
                 } else {
                     Text("No file found. Open a BeerXML file with the button at bottom, or download via FTP in the settings.")
@@ -144,15 +144,8 @@ fun jsonToRecipesObject(input: JSONObject?): Recipes {
 
 fun loadRecipes(context: Context): Recipes {
     var recipes = Recipes(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("recipes.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        recipes = jsonToRecipesObject(JSONObject(jsonObj2.toString()))
+        recipes = jsonToRecipesObject(JSONObject(readInternalFile(context, "recipes.json")))
     } catch (e: FileNotFoundException) {
         return recipes
     } catch (e: Exception) {
@@ -170,10 +163,8 @@ fun xmlUriToRecipes(uri: Uri?, context: Context): Recipes {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded recipes from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToRecipesObject(jsonObj) as Recipes
+            return jsonToRecipesObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load recipes from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Recipes(null)
         }
     }

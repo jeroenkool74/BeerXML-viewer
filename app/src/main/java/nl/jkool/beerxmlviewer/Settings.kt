@@ -1,6 +1,7 @@
 package nl.jkool.beerxmlviewer
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -25,6 +26,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,59 +39,102 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import it.sauronsoftware.ftp4j.FTPClient
 import it.sauronsoftware.ftp4j.FTPException
 import nl.jkool.beerxmlviewer.ui.theme.BeerXMLViewerTheme
 import org.json.JSONObject
 import org.json.XML
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
-import java.io.Writer
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-fun storeSettings(context: Context, site: String, path: String, username: String, password: String, fullInfo: Boolean) {
-    val inputPath = if (path == "") "/" else path
-    val fullInfoStr = when (fullInfo) {
-        true -> "true"
-        false -> "false"
-    }
-    val jsObject = JSONObject()
-        .put("site", stripUrl(site))
-        .put("path", inputPath)
-        .put("username", username)
-        .put("password", password)
-        .put("fullInfo", fullInfoStr)
-    var writer: Writer? = null
-    try {
-        val out = context.openFileOutput("settings.json", Context.MODE_PRIVATE)
-        writer = OutputStreamWriter(out)
-        writer.write(jsObject.toString())
-    } catch (e: Exception) {
-        Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
-    } finally {
-        writer?.close()
+private const val SETTINGS_PREFS_NAME = "encrypted_settings"
+private const val LEGACY_SETTINGS_FILE_NAME = "settings.json"
+private val SETTINGS_KEYS = listOf("site", "path", "username", "password", "fullInfo")
+
+private fun settingsPreferences(context: Context): SharedPreferences {
+    val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    return EncryptedSharedPreferences.create(
+        context,
+        SETTINGS_PREFS_NAME,
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+}
+
+private fun writeSettings(
+    context: Context,
+    site: String,
+    path: String,
+    username: String,
+    password: String,
+    fullInfo: Boolean
+) {
+    settingsPreferences(context).edit {
+        putString("site", stripUrl(site))
+        putString("path", if (path == "") "/" else path)
+        putString("username", username)
+        putString("password", password)
+        putString("fullInfo", fullInfo.toString())
     }
 }
 
+fun storeSettings(context: Context, site: String, path: String, username: String, password: String, fullInfo: Boolean) {
+    try {
+        writeSettings(context, site, path, username, password, fullInfo)
+        context.deleteFile(LEGACY_SETTINGS_FILE_NAME)
+    } catch (e: Exception) {
+        Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+    }
+}
+
+private fun String.removePrefixIgnoreCase(prefix: String): String =
+    if (startsWith(prefix, ignoreCase = true)) drop(prefix.length) else this
+
 fun stripUrl(url: String): String =
-    url.split("ftp://")[0]
+    url.trim().removePrefixIgnoreCase("ftp://")
+
+private fun legacySettings(context: Context): Map<String, String> =
+    try {
+        JSONObject(readInternalFile(context, LEGACY_SETTINGS_FILE_NAME)).toStringMap()
+    } catch (_: Exception) {
+        emptyMap()
+    }
 
 fun getSettings(context: Context): Map<String, String> {
-    var jsonObject = JSONObject()
-    val reader: BufferedReader?
-    try {
-        val `in` = context.openFileInput("settings.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        jsonObject = (JSONObject(jsonObj2.toString()))
-    } catch (_: Exception) { }
-    return jsonObject.toStringMap()
+    val prefs = try {
+        settingsPreferences(context)
+    } catch (_: Exception) {
+        return legacySettings(context)
+    }
+
+    val settings = SETTINGS_KEYS.mapNotNull { key ->
+        prefs.getString(key, null)?.let { value -> key to value }
+    }.toMap()
+    if (settings.isNotEmpty()) {
+        return settings
+    }
+
+    val legacySettings = legacySettings(context)
+    if (legacySettings.isNotEmpty()) {
+        writeSettings(
+            context,
+            legacySettings.getOrDefault("site", ""),
+            legacySettings.getOrDefault("path", "/"),
+            legacySettings.getOrDefault("username", ""),
+            legacySettings.getOrDefault("password", ""),
+            legacySettings.getOrDefault("fullInfo", "false") == "true"
+        )
+        context.deleteFile(LEGACY_SETTINGS_FILE_NAME)
+    }
+    return legacySettings
 }
 
 fun quickObtainFile(activity: MainActivity, context: Context){
@@ -107,10 +152,10 @@ fun quickObtainFile(activity: MainActivity, context: Context){
         Toast.makeText(context, "Unable to sync, some required setting is not set.", Toast.LENGTH_LONG).show()
         return
     } else {
-        val site = siteNull.toString()
-        val path = pathNull.toString()
-        val username = usernameNull.toString()
-        val password = passwordNull.toString()
+        val site = siteNull
+        val path = pathNull
+        val username = usernameNull
+        val password = passwordNull
         Thread {
             obtainFile(
                 activity,
@@ -124,6 +169,40 @@ fun quickObtainFile(activity: MainActivity, context: Context){
     }
 }
 
+private data class FtpServer(
+    val host: String,
+    val port: Int,
+    val security: Int,
+    val isPlainFtp: Boolean
+)
+
+private fun parseFtpServer(site: String): FtpServer {
+    val trimmedSite = site.trim()
+    val lowerSite = trimmedSite.lowercase()
+    val security = when {
+        lowerSite.startsWith("ftps://") -> FTPClient.SECURITY_FTPS
+        lowerSite.startsWith("ftpes://") -> FTPClient.SECURITY_FTPES
+        else -> FTPClient.SECURITY_FTP
+    }
+    val hostAndPort = trimmedSite.substringAfter("://", trimmedSite).substringBefore("/")
+    val host = hostAndPort.substringBefore(":")
+    val port = hostAndPort.substringAfter(":", "").toIntOrNull()
+        ?: if (security == FTPClient.SECURITY_FTPS) 990 else 21
+
+    return FtpServer(
+        host = host,
+        port = port,
+        security = security,
+        isPlainFtp = security == FTPClient.SECURITY_FTP
+    )
+}
+
+private fun downloadFtpText(ftpClient: FTPClient, context: Context, fileName: String): String {
+    val file = File(context.applicationInfo.dataDir, fileName)
+    ftpClient.download(fileName, file)
+    return file.inputStream().bufferedReader().use { it.readText() }
+}
+
 fun obtainFile(activity: MainActivity, context: Context, site: String, path: String, username: String, password: String) {
     val mFTPClient = FTPClient()
     activity.runOnUiThread {
@@ -131,7 +210,14 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
     try {
-        mFTPClient.connect(site, 21)
+        val server = parseFtpServer(site)
+        if (server.isPlainFtp) {
+            activity.runOnUiThread {
+                Toast.makeText(context, "Plain FTP is not encrypted. Use ftpes:// or ftps:// if your server supports it.", Toast.LENGTH_LONG).show()
+            }
+        }
+        mFTPClient.security = server.security
+        mFTPClient.connect(server.host, server.port)
         mFTPClient.login(username, password)
         mFTPClient.type = FTPClient.TYPE_BINARY
         mFTPClient.isPassive = true
@@ -139,11 +225,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         mFTPClient.changeDirectory(path)
 
         try {
-            mFTPClient.download("hops.xml", File(context.applicationInfo.dataDir + "/hops.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/hops.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "hops.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val hops = jsonToHopsObject(jsonObj)
             hops.store(context)
@@ -155,11 +237,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("brews.xml", File(context.applicationInfo.dataDir + "/brews.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/brews.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "brews.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val brews = jsonToBrewsObject(jsonObj)
             brews.store(context)
@@ -171,11 +249,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("equipments.xml", File(context.applicationInfo.dataDir + "/equipments.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/equipments.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "equipments.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val equipments = jsonToEquipmentsObject(jsonObj)
             equipments.store(context)
@@ -187,11 +261,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("fermentables.xml", File(context.applicationInfo.dataDir + "/fermentables.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/fermentables.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "fermentables.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val fermentables = jsonToFermentablesObject(jsonObj)
             fermentables.store(context)
@@ -203,11 +273,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("mashs.xml", File(context.applicationInfo.dataDir + "/mashs.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/mashs.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "mashs.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val mashs = jsonToMashsObject(jsonObj)
             mashs.store(context)
@@ -219,11 +285,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("miscs.xml", File(context.applicationInfo.dataDir + "/miscs.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/miscs.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "miscs.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val miscs = jsonToMiscsObject(jsonObj)
             miscs.store(context)
@@ -235,11 +297,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("recipes.xml", File(context.applicationInfo.dataDir + "/recipes.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/recipes.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "recipes.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val recipes = jsonToRecipesObject(jsonObj)
             recipes.store(context)
@@ -251,11 +309,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("styles.xml", File(context.applicationInfo.dataDir + "/styles.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/styles.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "styles.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val styles = jsonToStylesObject(jsonObj)
             styles.store(context)
@@ -267,11 +321,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("waters.xml", File(context.applicationInfo.dataDir + "/waters.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/waters.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "waters.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val waters = jsonToWatersObject(jsonObj)
             waters.store(context)
@@ -283,11 +333,7 @@ fun obtainFile(activity: MainActivity, context: Context, site: String, path: Str
         }
 
         try {
-            mFTPClient.download("yeasts.xml", File(context.applicationInfo.dataDir + "/yeasts.xml"))
-            val hopsFile =
-                File(context.applicationInfo.dataDir + "/yeasts.xml").inputStream()
-                    ?.bufferedReader()
-            val inputString = hopsFile.use { it?.readText() }!!
+            val inputString = downloadFtpText(mFTPClient, context, "yeasts.xml")
             val jsonObj = XML.toJSONObject(inputString)
             val yeasts = jsonToYeastsObject(jsonObj)
             yeasts.store(context)
@@ -391,7 +437,7 @@ fun Settings(activity: MainActivity, context: Context) {
                     .padding(innerPadding)
                     .padding(12.dp)
             ) {
-                Text("FTP site, without the 'ftp://' prefix")
+                Text("FTP site. Use ftpes:// or ftps:// for encrypted connections.")
 
                 Row {
                     TextField(
@@ -426,7 +472,7 @@ fun Settings(activity: MainActivity, context: Context) {
 //                        .border(1.dp, Color.LightGray, RoundedCornerShape(6.dp))
 //                        .padding(6.dp),
 //                )
-                var revealUntil by remember { mutableStateOf(0L) }
+                var revealUntil by remember { mutableLongStateOf(0L) }
                 TextField(
                     value = password,
                     onValueChange = {
@@ -455,7 +501,7 @@ fun Settings(activity: MainActivity, context: Context) {
                         }
                     ) {
                         Text(
-                            text = "Obtain XML from ftp",
+                            text = "Obtain XML from FTP/FTPS",
                             fontSize = 20.sp,
                             modifier = Modifier.padding(4.dp)
                         )

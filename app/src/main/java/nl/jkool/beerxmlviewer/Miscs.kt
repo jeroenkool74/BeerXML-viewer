@@ -23,7 +23,7 @@ class Miscs (
     val data: Any?
 ) {
     @Composable
-    fun miscsList(innerPadding: PaddingValues, context: Context) {
+    fun MiscsList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -72,15 +72,8 @@ fun jsonToMiscsObject(input: JSONObject?): Miscs {
 
 fun loadMiscs(context: Context): Miscs {
     var miscs = Miscs(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("miscs.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        miscs = jsonToMiscsObject(JSONObject(jsonObj2.toString()))
+        miscs = jsonToMiscsObject(JSONObject(readInternalFile(context, "miscs.json")))
     } catch (e: FileNotFoundException) {
         return miscs
     } catch (e: Exception) {
@@ -98,10 +91,8 @@ fun xmlUriToMiscs(uri: Uri?, context: Context): Miscs {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded miscs from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToMiscsObject(jsonObj) as Miscs
+            return jsonToMiscsObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load miscs from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Miscs(null)
         }
     }

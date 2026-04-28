@@ -23,7 +23,7 @@ class Waters (
     val data: Any?
 ) {
     @Composable
-    fun watersList(innerPadding: PaddingValues, context: Context) {
+    fun WatersList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -72,15 +72,8 @@ fun jsonToWatersObject(input: JSONObject?): Waters {
 
 fun loadWaters(context: Context): Waters {
     var waters = Waters(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("waters.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        waters = jsonToWatersObject(JSONObject(jsonObj2.toString()))
+        waters = jsonToWatersObject(JSONObject(readInternalFile(context, "waters.json")))
     } catch (e: FileNotFoundException) {
         return waters
     } catch (e: Exception) {
@@ -98,10 +91,8 @@ fun xmlUriToWaters(uri: Uri?, context: Context): Waters {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded waters from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToWatersObject(jsonObj) as Waters
+            return jsonToWatersObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load waters from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Waters(null)
         }
     }

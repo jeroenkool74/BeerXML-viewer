@@ -23,7 +23,7 @@ class Equipments (
     val data: Any?
 ) {
     @Composable
-    fun equipmentsList(innerPadding: PaddingValues, context: Context) {
+    fun EquipmentsList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
@@ -72,15 +72,8 @@ fun jsonToEquipmentsObject(input: JSONObject?): Equipments {
 
 fun loadEquipments(context: Context): Equipments {
     var equipments = Equipments(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("equipments.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        equipments = jsonToEquipmentsObject(JSONObject(jsonObj2.toString()))
+        equipments = jsonToEquipmentsObject(JSONObject(readInternalFile(context, "equipments.json")))
     } catch (e: FileNotFoundException) {
         return equipments
     } catch (e: Exception) {
@@ -98,10 +91,8 @@ fun xmlUriToEquipments(uri: Uri?, context: Context): Equipments {
             val inputString = bufferedReader.use { it?.readText() }
             val jsonObj = XML.toJSONObject(inputString)
             //Toast.makeText(context, "Successfully loaded equipments from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToEquipmentsObject(jsonObj) as Equipments
+            return jsonToEquipmentsObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load equipments from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Equipments(null)
         }
     }
