@@ -34,7 +34,7 @@ fun eitherGetString(
     try {
         return Either.Right(o.getString(name))
     } catch (e: Exception) {
-        return Either.Left("Error: $error")
+        return Either.Left(error)
     }
 }
 
@@ -46,6 +46,6 @@ fun eitherGetDouble(
     try {
         return Either.Right(o.getDouble(name))
     } catch (e: Exception) {
-        return Either.Left("Error: $error")
+        return Either.Left(error)
     }
 }

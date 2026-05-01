@@ -30,7 +30,7 @@ class EitherTest {
         val json = JSONObject().put("NAME", "Cascade")
 
         assertEquals(Either.Right("Cascade"), eitherGetString(json, "NAME", "name missing"))
-        assertEquals(Either.Left("Error: amount missing"), eitherGetString(json, "AMOUNT", "amount missing"))
+        assertEquals(Either.Left("amount missing"), eitherGetString(json, "AMOUNT", "amount missing"))
     }
 
     @Test
@@ -40,6 +40,6 @@ class EitherTest {
 
         assertTrue(alpha is Either.Right)
         assertEquals(5.5, (alpha as Either.Right).value, 0.0)
-        assertEquals(Either.Left("Error: beta missing"), eitherGetDouble(json, "BETA", "beta missing"))
+        assertEquals(Either.Left("beta missing"), eitherGetDouble(json, "BETA", "beta missing"))
     }
 }

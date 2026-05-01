@@ -29,11 +29,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.json.XML
 import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
@@ -58,24 +58,25 @@ class Recipes (
             }
             Column {
                 if (data != null) {
+                    val unknownStyle = stringResource(R.string.unknown_style)
                     if (sorted) {
                         Row(modifier = Modifier.padding(bottom = 16.dp, start = 10.dp).clickable { changeSorting() }) {
                             Icon(
                                 painter = painterResource(R.drawable.sort_by_alpha_24px),
-                                contentDescription = "Sort by name"
+                                contentDescription = stringResource(R.string.sort_by_name)
                             )
                             Text (
-                                " Sort by name"
+                                " ${stringResource(R.string.sort_by_name)}"
                             )
                         }
                     } else {
                         Row(modifier = Modifier.padding(bottom = 16.dp, start = 10.dp).clickable { changeSorting() }) {
                             Icon(
                                 painter = painterResource(R.drawable.swap_vert_24px),
-                                contentDescription = "Sort by beer style"
+                                contentDescription = stringResource(R.string.sort_by_beer_style)
                             )
                             Text(
-                                " Sort by beer style"
+                                " ${stringResource(R.string.sort_by_beer_style)}"
                             )
                         }
                     }
@@ -86,10 +87,10 @@ class Recipes (
                             context,
                             topLayer = true,
                             groupByString = { o: JSONObject ->
-                                o.styleName()
+                                o.styleName(unknownStyle)
                             })
                         sorted && !fullInfo -> BriefRecipeView(data, context, groupByString = { o: JSONObject ->
-                            o.styleName()
+                            o.styleName(unknownStyle)
                         })
                         !sorted && fullInfo ->
                             ParseToComposable(
@@ -101,7 +102,7 @@ class Recipes (
                         !sorted && !fullInfo -> BriefRecipeView(data, context)
                     }
                 } else {
-                    Text("No file found. Open a BeerXML file with the button at bottom, or download via FTP in the settings.")
+                    Text(stringResource(R.string.no_file_found))
                 }
             }
         }
@@ -115,7 +116,7 @@ class Recipes (
                 writer = OutputStreamWriter(out)
                 writer.write(toJSON().toString())
             } catch (e: Exception) {
-                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.something_went_wrong_period), Toast.LENGTH_LONG).show()
             } finally {
                 if (writer != null) {
                     writer.close()
@@ -149,7 +150,7 @@ fun loadRecipes(context: Context): Recipes {
     } catch (e: FileNotFoundException) {
         return recipes
     } catch (e: Exception) {
-        Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, context.getString(R.string.something_went_wrong_period), Toast.LENGTH_LONG).show()
     }
     return recipes
 }
@@ -161,8 +162,7 @@ fun xmlUriToRecipes(uri: Uri?, context: Context): Recipes {
         try {
             val bufferedReader = context.contentResolver.openInputStream(uri)?.bufferedReader()
             val inputString = bufferedReader.use { it?.readText() }
-            val jsonObj = XML.toJSONObject(inputString)
-            //Toast.makeText(context, "Successfully loaded recipes from the xml file!", Toast.LENGTH_LONG).show()
+            val jsonObj = beerXmlToJSONObject(inputString)
             return jsonToRecipesObject(jsonObj)
         } catch (e: Exception) {
             return Recipes(null)

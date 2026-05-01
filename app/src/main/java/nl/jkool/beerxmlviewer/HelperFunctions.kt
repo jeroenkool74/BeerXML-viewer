@@ -32,8 +32,8 @@ fun readInternalFile(context: Context, fileName: String): String =
 fun JSONObject.displayName(defaultName: String = "Unnamed"): String =
     optString("NAME").takeIf { it.isNotBlank() } ?: defaultName.ifBlank { "Unnamed" }
 
-fun JSONObject.styleName(): String =
-    optJSONObject("STYLE")?.optString("NAME")?.takeIf { it.isNotBlank() } ?: "Unknown style"
+fun JSONObject.styleName(defaultName: String = "Unknown style"): String =
+    optJSONObject("STYLE")?.optString("NAME")?.takeIf { it.isNotBlank() } ?: defaultName
 
 fun JSONObject.optNonBlankString(name: String): String? =
     optString(name).takeIf { it.isNotBlank() }
@@ -467,6 +467,7 @@ fun nameToUnit(input: String): String {
 fun BriefRecipeCard(anObject: JSONObject, context: Context){
     Box(modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)) {
         var isExpanded by remember { mutableStateOf(false) }
+        val displayName = anObject.displayName(stringResource(R.string.unnamed_recipe))
         Surface(
             shape = MaterialTheme.shapes.medium,
             color = colorResource(depthToColorId(0)),
@@ -475,21 +476,21 @@ fun BriefRecipeCard(anObject: JSONObject, context: Context){
             Column(modifier = Modifier.padding(all = 10.dp)) {
                 if (isExpanded) {
                     Text(
-                        "${anObject.displayName("Unnamed recipe")} ▶",
+                        "$displayName ▶",
                         fontSize = 18.sp,
                         modifier = Modifier.padding(all = 4.dp),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 } else {
                     Text(
-                        "${anObject.displayName("Unnamed recipe")} ▼",
+                        "$displayName ▼",
                         fontSize = 18.sp,
                         modifier = Modifier.padding(all = 4.dp),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
                 if (isExpanded) {
-                    OptionalText("Style", anObject.styleName(), context)
+                    OptionalText("Style", anObject.styleName(stringResource(R.string.unknown_style)), context)
                     OptionalText("Volume", anObject.optNonBlankString("DISPLAY_BATCH_SIZE"), context)
                     OptionalText("EST_OG", anObject.optNonBlankString("EST_OG"), context)
                     OptionalText("EST_COLOR", anObject.optNonBlankString("EST_COLOR"), context)
@@ -509,8 +510,8 @@ fun BriefRecipeCard(anObject: JSONObject, context: Context){
                                 color = colorResource(depthToColorId(1)),
                             ) {
                                 Column(modifier = Modifier.padding(all = 10.dp)) {
-                                    val values = eitherGetString(water, "NAME", "Can not get water name").flatMap { name ->
-                                        eitherGetString(water, "DISPLAY_AMOUNT", "Can not get amount").map { amount ->
+                                    val values = eitherGetString(water, "NAME", stringResource(R.string.cannot_get_water_name)).flatMap { name ->
+                                        eitherGetString(water, "DISPLAY_AMOUNT", stringResource(R.string.cannot_get_amount)).map { amount ->
                                             listOf(name, amount)
                                         }
                                     }
@@ -569,9 +570,9 @@ fun BriefRecipeCard(anObject: JSONObject, context: Context){
                                 color = colorResource(depthToColorId(1)),
                             ) {
                                 Column(modifier = Modifier.padding(all = 10.dp)) {
-                                    val values = eitherGetString(fermentable, "NAME", "Can not get name").flatMap { name ->
-                                        eitherGetString(fermentable, "DISPLAY_AMOUNT", "Can not get amount").flatMap { amount ->
-                                            eitherGetString(fermentable, "SUPPLIER", "Can not get supplier").map { supplier ->
+                                    val values = eitherGetString(fermentable, "NAME", stringResource(R.string.cannot_get_name)).flatMap { name ->
+                                        eitherGetString(fermentable, "DISPLAY_AMOUNT", stringResource(R.string.cannot_get_amount)).flatMap { amount ->
+                                            eitherGetString(fermentable, "SUPPLIER", stringResource(R.string.cannot_get_supplier)).map { supplier ->
                                                 listOf(name, amount, supplier)
                                             }
                                         }
@@ -604,12 +605,12 @@ fun BriefRecipeCard(anObject: JSONObject, context: Context){
                                 color = colorResource(depthToColorId(1)),
                             ) {
                                 Column(modifier = Modifier.padding(all = 10.dp)) {
-                                    val values = eitherGetString(mashStep, "END_TEMP", "Can not get temp").flatMap { temp ->
-                                        eitherGetString(mashStep, "STEP_TIME", "Can not get time").map { time ->
+                                    val values = eitherGetString(mashStep, "END_TEMP", stringResource(R.string.cannot_get_temp)).flatMap { temp ->
+                                        eitherGetString(mashStep, "STEP_TIME", stringResource(R.string.cannot_get_time)).map { time ->
                                             listOf(temp, time)
                                         }
                                     }
-                                    val name = eitherGetString(mashStep, "NAME", "Can not get name")
+                                    val name = eitherGetString(mashStep, "NAME", stringResource(R.string.cannot_get_name))
                                     when (values) {
                                         is Either.Left -> Text(values.value)
                                         is Either.Right -> {
@@ -658,18 +659,18 @@ fun BriefRecipeCard(anObject: JSONObject, context: Context){
                             ) {
                                 Column(modifier = Modifier.padding(all = 10.dp)) {
                                     val values = eitherGetString(
-                                        o, "NAME", "Can not find hop name"
+                                        o, "NAME", stringResource(R.string.cannot_find_hop_name)
                                     ).flatMap { name ->
                                         eitherGetString(
                                             o,
                                             "DISPLAY_AMOUNT",
-                                            "Can not find hop display amount"
+                                            stringResource(R.string.cannot_find_hop_display_amount)
                                         ).flatMap { amount ->
-                                            eitherGetString(o, "FORM", "Can not find form").flatMap { form ->
+                                            eitherGetString(o, "FORM", stringResource(R.string.cannot_find_form)).flatMap { form ->
                                                 eitherGetString(
                                                     o,
                                                     "ALPHA",
-                                                    "Can not find hop alpha"
+                                                    stringResource(R.string.cannot_find_hop_alpha)
                                                 ).map { alpha ->
                                                     listOf(
                                                         name,
@@ -719,12 +720,12 @@ fun BriefRecipeCard(anObject: JSONObject, context: Context){
                                     val values = eitherGetString(
                                         yeast,
                                         "NAME",
-                                        "Can not find yeast name"
+                                        stringResource(R.string.cannot_find_yeast_name)
                                     ).flatMap { name ->
                                         eitherGetDouble(
                                             yeast,
                                             "AMOUNT",
-                                            "Can not find yeast amount"
+                                            stringResource(R.string.cannot_find_yeast_amount)
                                         ).map { amount ->
                                             listOf(name, (amount * 1000).toInt().toString())
                                         }
@@ -791,7 +792,7 @@ fun BriefRecipeView(anObject: Any, context: Context, groupByString: ((a: JSONObj
                     BriefRecipeCard(anObject, context)
                 }
             }
-        else -> Text("Something went wrong.")
+        else -> Text(stringResource(R.string.something_went_wrong_period))
     }
 }
 
@@ -845,10 +846,11 @@ fun ParseToComposable(anObject: Any, parent: String, context: Context, depth: In
                     ParseToComposable(anObject, parent, context, depth)
                 }
             } else {
+                val unnamed = stringResource(R.string.unnamed)
                 val name = try {
-                    anObject.displayName(parent)
+                    anObject.displayName(parent.ifBlank { unnamed })
                 } catch (e: Exception) {
-                    parent
+                    parent.ifBlank { unnamed }
                 }
                 if (anObject.isOfLength(1)) {
                     Column(modifier = Modifier.padding(0.dp, 10.dp, 0.dp, 10.dp)) {
