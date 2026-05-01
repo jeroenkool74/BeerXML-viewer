@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -137,36 +138,16 @@ fun getSettings(context: Context): Map<String, String> {
     return legacySettings
 }
 
-fun quickObtainFile(activity: MainActivity, context: Context){
+fun quickObtainFile(activity: MainActivity, context: Context) {
     val settings = getSettings(context)
-    val siteNull = settings.get("site")
-    val pathNull = settings.get("path")
-    val usernameNull = settings.get("username")
-    val passwordNull = settings.get("password")
-    if (
-        siteNull == null ||
-        pathNull == null ||
-        usernameNull == null ||
-        passwordNull == null
-        ) {
-        Toast.makeText(context, "Unable to sync, some required setting is not set.", Toast.LENGTH_LONG).show()
-        return
-    } else {
-        val site = siteNull
-        val path = pathNull
-        val username = usernameNull
-        val password = passwordNull
-        Thread {
-            obtainFile(
-                activity,
-                context,
-                site,
-                path,
-                username,
-                password
-            )
-        }.start()
-    }
+    startFtpDownload(
+        activity,
+        context,
+        settings["site"],
+        settings["path"],
+        settings["username"],
+        settings["password"]
+    )
 }
 
 private data class FtpServer(
@@ -185,9 +166,14 @@ private fun parseFtpServer(site: String): FtpServer {
         else -> FTPClient.SECURITY_FTP
     }
     val hostAndPort = trimmedSite.substringAfter("://", trimmedSite).substringBefore("/")
-    val host = hostAndPort.substringBefore(":")
-    val port = hostAndPort.substringAfter(":", "").toIntOrNull()
-        ?: if (security == FTPClient.SECURITY_FTPS) 990 else 21
+    val host = hostAndPort.substringBefore(":").trim()
+    val defaultPort = if (security == FTPClient.SECURITY_FTPS) 990 else 21
+    val portText = hostAndPort.substringAfter(":", "").trim()
+    val port = if (portText == "") {
+        defaultPort
+    } else {
+        portText.toIntOrNull() ?: throw IllegalArgumentException("FTP port must be a number.")
+    }
 
     return FtpServer(
         host = host,
@@ -195,6 +181,80 @@ private fun parseFtpServer(site: String): FtpServer {
         security = security,
         isPlainFtp = security == FTPClient.SECURITY_FTP
     )
+}
+
+internal fun ftpSettingsValidationError(
+    site: String?,
+    path: String?,
+    username: String?,
+    password: String?
+): String? {
+    if (site.isNullOrBlank()) return "FTP site is required."
+    if (path.isNullOrBlank()) return "FTP path is required."
+    if (username.isNullOrBlank()) return "FTP username is required."
+    if (password.isNullOrBlank()) return "FTP password is required."
+
+    val server = try {
+        parseFtpServer(site)
+    } catch (_: IllegalArgumentException) {
+        return "FTP site is invalid."
+    }
+    if (server.host.isBlank() || server.host.any { it.isWhitespace() }) return "FTP site is invalid."
+    if (server.port !in 1..65535) return "FTP port is invalid."
+
+    return null
+}
+
+private fun normalizedFtpSite(site: String?): String = site?.let(::stripUrl).orEmpty()
+
+private fun normalizedFtpPath(path: String?): String = path?.ifBlank { "/" }.orEmpty()
+
+internal fun hasValidFtpSettings(
+    site: String?,
+    path: String?,
+    username: String?,
+    password: String?
+): Boolean = ftpSettingsValidationError(
+    normalizedFtpSite(site),
+    normalizedFtpPath(path),
+    username.orEmpty(),
+    password.orEmpty()
+) == null
+
+private fun startFtpDownload(
+    activity: MainActivity,
+    context: Context,
+    site: String?,
+    path: String?,
+    username: String?,
+    password: String?
+) {
+    val normalizedSite = normalizedFtpSite(site)
+    val normalizedPath = normalizedFtpPath(path)
+    val normalizedUsername = username.orEmpty()
+    val normalizedPassword = password.orEmpty()
+    val validationError = ftpSettingsValidationError(
+        normalizedSite,
+        normalizedPath,
+        normalizedUsername,
+        normalizedPassword
+    )
+
+    if (validationError != null) {
+        Toast.makeText(context, "Unable to sync, $validationError", Toast.LENGTH_LONG).show()
+        return
+    }
+
+    Thread {
+        obtainFile(
+            activity,
+            context,
+            normalizedSite,
+            normalizedPath,
+            normalizedUsername,
+            normalizedPassword
+        )
+    }.start()
 }
 
 private fun downloadFtpText(ftpClient: FTPClient, context: Context, fileName: String): String {
@@ -400,6 +460,7 @@ fun Settings(activity: MainActivity, context: Context) {
             settings.getOrDefault("fullInfo", "false") == "true"
         )
     }
+    val ftpSettingsValid = hasValidFtpSettings(site, path, username, password)
     BackHandler(enabled = true, onBack = {
         activity.setContent {
             storeSettings(context, site, path, username, password, fullInfo)
@@ -443,7 +504,8 @@ fun Settings(activity: MainActivity, context: Context) {
                     TextField(
                         value = site,
                         onValueChange = { site = it },
-                        label = { Text("ftp site") }
+                        label = { Text("ftp site") },
+                        modifier = Modifier.testTag("ftpSiteField")
                     )
                 }
 
@@ -451,14 +513,16 @@ fun Settings(activity: MainActivity, context: Context) {
                 TextField(
                     value = path,
                     onValueChange = { path = it },
-                    label = { Text("path") }
+                    label = { Text("path") },
+                    modifier = Modifier.testTag("ftpPathField")
                 )
 
                 Text("Username", modifier = Modifier.padding(top = 12.dp))
                 TextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("username") }
+                    label = { Text("username") },
+                    modifier = Modifier.testTag("ftpUsernameField")
                 )
 
                 Text("Password", modifier = Modifier.padding(top = 12.dp))
@@ -484,6 +548,7 @@ fun Settings(activity: MainActivity, context: Context) {
                         password = it
                     },
                     label = { Text("password") },
+                    modifier = Modifier.testTag("ftpPasswordField"),
                     visualTransformation = LastCharRevealTransformation(revealUntil = revealUntil),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password
@@ -494,10 +559,10 @@ fun Settings(activity: MainActivity, context: Context) {
                     modifier = Modifier.padding(top = 20.dp)
                 ) {
                     Button(
+                        enabled = ftpSettingsValid,
+                        modifier = Modifier.testTag("settingsFtpDownloadButton"),
                         onClick = {
-                            Thread {
-                                obtainFile(activity, context, stripUrl(site), path, username, password)
-                            }.start()
+                            startFtpDownload(activity, context, site, path, username, password)
                         }
                     ) {
                         Text(

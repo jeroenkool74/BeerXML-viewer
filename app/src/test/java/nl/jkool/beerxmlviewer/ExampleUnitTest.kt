@@ -16,6 +16,34 @@ class HelperFunctionsTest {
     }
 
     @Test
+    fun ftpSettingsValidationError_acceptsCompleteSettings() {
+        assertNull(ftpSettingsValidationError("ftp://example.com", "/", "user", "password"))
+        assertNull(ftpSettingsValidationError("ftpes://example.com:21", "/xml", "user", "password"))
+    }
+
+    @Test
+    fun ftpSettingsValidationError_rejectsMissingRequiredSettings() {
+        assertEquals("FTP site is required.", ftpSettingsValidationError("", "/", "user", "password"))
+        assertEquals("FTP path is required.", ftpSettingsValidationError("example.com", "", "user", "password"))
+        assertEquals("FTP username is required.", ftpSettingsValidationError("example.com", "/", "", "password"))
+        assertEquals("FTP password is required.", ftpSettingsValidationError("example.com", "/", "user", ""))
+    }
+
+    @Test
+    fun ftpSettingsValidationError_rejectsInvalidServerSettings() {
+        assertEquals("FTP site is invalid.", ftpSettingsValidationError("ftp://", "/", "user", "password"))
+        assertEquals("FTP site is invalid.", ftpSettingsValidationError("example.com:not-a-port", "/", "user", "password"))
+        assertEquals("FTP port is invalid.", ftpSettingsValidationError("example.com:70000", "/", "user", "password"))
+    }
+
+    @Test
+    fun hasValidFtpSettings_matchesDownloadStartValidation() {
+        assertTrue(hasValidFtpSettings("ftp://example.com", "", "user", "password"))
+        assertFalse(hasValidFtpSettings("", "/", "user", "password"))
+        assertFalse(hasValidFtpSettings("example.com:invalid", "/", "user", "password"))
+    }
+
+    @Test
     fun displayName_usesFallbackForMissingName() {
         assertEquals("Unnamed", JSONObject().displayName())
         assertEquals("Fallback", JSONObject().displayName("Fallback"))

@@ -39,6 +39,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -134,7 +135,14 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         var navState by rememberSaveable { mutableIntStateOf(initView) }
-        val fullInfo = getFullInfoSetting(context)
+        val settings = getSettings(context)
+        val fullInfo = settings.getOrDefault("fullInfo", "false") == "true"
+        val ftpSettingsValid = hasValidFtpSettings(
+            settings["site"],
+            settings["path"],
+            settings["username"],
+            settings["password"]
+        )
         val stateHistory = rememberSaveable { mutableListOf<Int>() }
         BackHandler(enabled = true, onBack = {
             when {
@@ -341,7 +349,11 @@ fun Main(activity: MainActivity, context: Context, initView: Int = 1) {
                             Text(text = pageTitle)
                         },
                         actions = {
-                            Button(onClick = { quickObtainFile(activity, context) }){
+                            Button(
+                                enabled = ftpSettingsValid,
+                                modifier = Modifier.testTag("mainFtpDownloadButton"),
+                                onClick = { quickObtainFile(activity, context) }
+                            ) {
                                 Icon(
                                     painter = painterResource(R.drawable.download_24px),
                                     contentDescription = "Download from FTP"
