@@ -10,9 +10,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.json.JSONObject
-import org.json.XML
 import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
@@ -23,14 +23,14 @@ class Hops (
     val data: Any?
 ) {
     @Composable
-    fun hopsList(innerPadding: PaddingValues, context: Context) {
+    fun HopsList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
             if (data != null) {
                 ParseToComposable(data, "", context, topLayer = true)
             } else {
-                Text("No file found. Open a BeerXML file with the button at bottom, or download via FTP in the settings.")
+                Text(stringResource(R.string.no_file_found))
             }
         }
     }
@@ -43,7 +43,7 @@ class Hops (
                 writer = OutputStreamWriter(out)
                 writer.write(toJSON().toString())
             } catch (e: Exception) {
-                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.something_went_wrong_period), Toast.LENGTH_LONG).show()
             } finally {
                 if (writer != null) {
                     writer.close()
@@ -72,19 +72,12 @@ fun jsonToHopsObject(input: JSONObject?): Hops {
 
 fun loadHops(context: Context): Hops {
     var hops = Hops(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("hops.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        hops = jsonToHopsObject(JSONObject(jsonObj2.toString()))
+        hops = jsonToHopsObject(JSONObject(readInternalFile(context, "hops.json")))
     } catch (e: FileNotFoundException) {
         return hops
     } catch (e: Exception) {
-        Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, context.getString(R.string.something_went_wrong_period), Toast.LENGTH_LONG).show()
     }
     return hops
 }
@@ -96,12 +89,9 @@ fun xmlUriToHops(uri: Uri?, context: Context): Hops {
         try {
             val bufferedReader = context.contentResolver.openInputStream(uri)?.bufferedReader()
             val inputString = bufferedReader.use { it?.readText() }
-            val jsonObj = XML.toJSONObject(inputString)
-            //Toast.makeText(context, "Successfully loaded hops from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToHopsObject(jsonObj) as Hops
+            val jsonObj = beerXmlToJSONObject(inputString)
+            return jsonToHopsObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load hops from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Hops(null)
         }
     }

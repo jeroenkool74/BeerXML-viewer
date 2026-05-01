@@ -10,9 +10,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.json.JSONObject
-import org.json.XML
 import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
@@ -23,14 +23,14 @@ class Yeasts (
     val data: Any?
 ) {
     @Composable
-    fun yeastsList(innerPadding: PaddingValues, context: Context) {
+    fun YeastsList(innerPadding: PaddingValues, context: Context) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp, 10.dp, 10.dp, 0.dp)
         ) {
             if (data != null) {
                 ParseToComposable(data, "", context, topLayer = true)
             } else {
-                Text("No file found. Open a BeerXML file with the button at bottom, or download via FTP in the settings.")
+                Text(stringResource(R.string.no_file_found))
             }
         }
     }
@@ -43,7 +43,7 @@ class Yeasts (
                 writer = OutputStreamWriter(out)
                 writer.write(toJSON().toString())
             } catch (e: Exception) {
-                Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.something_went_wrong_period), Toast.LENGTH_LONG).show()
             } finally {
                 if (writer != null) {
                     writer.close()
@@ -72,19 +72,12 @@ fun jsonToYeastsObject(input: JSONObject?): Yeasts {
 
 fun loadYeasts(context: Context): Yeasts {
     var yeasts = Yeasts(null)
-    var reader: BufferedReader? = null
     try {
-        val `in` = context.openFileInput("yeasts.json")
-        reader = BufferedReader(InputStreamReader(`in`))
-        val jsonObj2 = StringBuilder()
-        for (line in reader.readLine()) {
-            jsonObj2.append(line)
-        }
-        yeasts = jsonToYeastsObject(JSONObject(jsonObj2.toString()))
+        yeasts = jsonToYeastsObject(JSONObject(readInternalFile(context, "yeasts.json")))
     } catch (e: FileNotFoundException) {
         return yeasts
     } catch (e: Exception) {
-        Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, context.getString(R.string.something_went_wrong_period), Toast.LENGTH_LONG).show()
     }
     return yeasts
 }
@@ -96,12 +89,9 @@ fun xmlUriToYeasts(uri: Uri?, context: Context): Yeasts {
         try {
             val bufferedReader = context.contentResolver.openInputStream(uri)?.bufferedReader()
             val inputString = bufferedReader.use { it?.readText() }
-            val jsonObj = XML.toJSONObject(inputString)
-            //Toast.makeText(context, "Successfully loaded yeasts from the xml file!", Toast.LENGTH_LONG).show()
-            return jsonToYeastsObject(jsonObj) as Yeasts
+            val jsonObj = beerXmlToJSONObject(inputString)
+            return jsonToYeastsObject(jsonObj)
         } catch (e: Exception) {
-            //Toast.makeText(context, "Failed to load yeasts from the xml file.", Toast.LENGTH_LONG).show()
-            Toast.makeText(context, "$e", Toast.LENGTH_LONG).show()
             return Yeasts(null)
         }
     }
