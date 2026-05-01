@@ -274,4 +274,101 @@
     <string name="FILL_UNTIL">Fill until</string>
     <string name="fullInfo">Show all available information field in recipes and brews</string>
     <string name="EQUIPMENT">Equipment</string>
+    <string name="nav_hop">Hop</string>
+    <string name="nav_fermentable">Fermentable</string>
+    <string name="nav_yeast">Yeast</string>
+    <string name="nav_misc">Misc</string>
+    <string name="nav_water">Water</string>
+    <string name="nav_equipment">Equipment</string>
+    <string name="nav_style">Style</string>
+    <string name="nav_mash">Mash</string>
+    <string name="nav_recipe">Recipe</string>
+    <string name="nav_brew">Brews</string>
+    <string name="content_description_menu">Menu</string>
+    <string name="content_description_settings">Settings</string>
+    <string name="content_description_download_from_ftp">Download from FTP</string>
+    <string name="content_description_open_xml_file">Open XML file</string>
+    <string name="content_description_dismiss_message">Dismiss message</string>
+    <string name="download_from_ftp">Download from FTP</string>
+    <string name="open_xml_file">Open XML file</string>
+    <string name="settings_title">Settings</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="something_went_wrong_period">Something went wrong.</string>
+    <string name="no_file_found">No file found. Open a BeerXML file with the button at bottom, or download via FTP in the settings.</string>
+    <string name="missing_request_code">Missing requestCode</string>
+    <string name="fallback_file">file</string>
+    <string name="stored_file">Stored %1$s</string>
+    <string name="failed_to_load_file">Failed to load %1$s</string>
+    <string name="failed_to_load_hops">Failed to load hops</string>
+    <string name="ftp_port_must_be_number">FTP port must be a number.</string>
+    <string name="ftp_site_required">FTP site is required.</string>
+    <string name="ftp_path_required">FTP path is required.</string>
+    <string name="ftp_username_required">FTP username is required.</string>
+    <string name="ftp_password_required">FTP password is required.</string>
+    <string name="ftp_site_invalid">FTP site is invalid.</string>
+    <string name="ftp_port_invalid">FTP port is invalid.</string>
+    <string name="ftp_unable_to_sync">Unable to sync, %1$s</string>
+    <string name="ftp_connecting">Connecting to FTP server…</string>
+    <string name="ftp_connecting_plain_warning">Connecting to FTP server. Plain FTP is not encrypted.</string>
+    <string name="ftp_downloading_file">Downloading %1$s</string>
+    <string name="ftp_downloaded_files">Downloaded %1$d of %2$d files</string>
+    <string name="ftp_download_complete_message">Download completed. Data refreshed.</string>
+    <string name="ftp_download_partial_message">Downloaded %1$d of %2$d files. Failed: %3$s</string>
+    <string name="ftp_could_not_connect">Could not connect to FTP server.</string>
+    <string name="ftp_unknown_host">Could not connect to FTP server. Are you sure the web address is correct?</string>
+    <string name="ftp_timeout">Connection timeout, server does not respond.</string>
+    <string name="ftp_unable_to_sync_server">Unable to sync from FTP server.</string>
+    <string name="ftp_download_failed_title">Download failed</string>
+    <string name="ftp_download_warning_title">Download finished with issues</string>
+    <string name="ftp_download_complete_title">Download complete</string>
+    <string name="ftp_downloading_title">Downloading from FTP</string>
+    <string name="ftp_files_complete">%1$d of %2$d files complete</string>
+    <string name="ftp_site_description">FTP site. You can enter a host name or a full URI, for example ftp://example.com, ftpes://example.com, or ftps://example.com. Use ftpes:// or ftps:// for encrypted connections when your server supports it.</string>
+    <string name="ftp_site_label">ftp site</string>
+    <string name="ftp_path_description">Path, use "/" for root dir</string>
+    <string name="ftp_path_label">path</string>
+    <string name="ftp_username_title">Username</string>
+    <string name="ftp_username_label">username</string>
+    <string name="ftp_password_title">Password</string>
+    <string name="ftp_password_label">password</string>
+    <string name="obtain_xml_from_ftp">Obtain XML from FTP/FTPS</string>
+    <string name="ftp_help_title">FTP download setup</string>
+    <string name="ftp_help_body">The app connects to the FTP/FTPS server with the site, username, and password below, then opens the configured path. The site field accepts a host name or a URI with ftp://, ftpes://, or ftps://. Put the BeerXML export files directly in that folder. Missing files are skipped and shown in the final summary.</string>
+    <string name="ftp_expected_files_title">Expected files</string>
+    <string name="show_ftp_help">Show FTP download setup</string>
+    <string name="hide_ftp_help">Hide FTP download setup</string>
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_summary">FTP settings are stored only on this device in encrypted app storage. The app does not send your server address, username, password, or BeerXML files to the developer or to third-party services.</string>
+    <string name="show_privacy_summary">Show privacy information</string>
+    <string name="hide_privacy_summary">Hide privacy information</string>
+    <string name="sort_by_name">Sort by name</string>
+    <string name="sort_by_beer_style">Sort by beer style</string>
+    <string name="unnamed">Unnamed</string>
+    <string name="unnamed_recipe">Unnamed recipe</string>
+    <string name="unknown_style">Unknown style</string>
+    <string name="error_prefix">Error: %1$s</string>
+    <string name="cannot_get_water_name">Can not get water name</string>
+    <string name="cannot_get_amount">Can not get amount</string>
+    <string name="cannot_get_name">Can not get name</string>
+    <string name="cannot_get_supplier">Can not get supplier</string>
+    <string name="cannot_get_temp">Can not get temp</string>
+    <string name="cannot_get_time">Can not get time</string>
+    <string name="cannot_find_hop_name">Can not find hop name</string>
+    <string name="cannot_find_hop_display_amount">Can not find hop display amount</string>
+    <string name="cannot_find_form">Can not find form</string>
+    <string name="cannot_find_hop_alpha">Can not find hop alpha</string>
+    <string name="cannot_find_yeast_name">Can not find yeast name</string>
+    <string name="cannot_find_yeast_amount">Can not find yeast amount</string>
+    <string-array name="ftp_expected_files">
+        <item>hops.xml</item>
+        <item>brews.xml</item>
+        <item>equipments.xml</item>
+        <item>fermentables.xml</item>
+        <item>mashs.xml</item>
+        <item>miscs.xml</item>
+        <item>recipes.xml</item>
+        <item>styles.xml</item>
+        <item>waters.xml</item>
+        <item>yeasts.xml</item>
+    </string-array>
     </resources>

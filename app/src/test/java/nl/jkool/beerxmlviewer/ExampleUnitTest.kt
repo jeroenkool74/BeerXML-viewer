@@ -90,4 +90,20 @@ class HelperFunctionsTest {
         assertEquals("example.com", result["site"])
         assertEquals("true", result["fullInfo"])
     }
+
+    @Test
+    fun beerXmlToJSONObject_convertsRepeatedElementsToArray() {
+        val result = beerXmlToJSONObject(
+            """
+            <HOPS>
+                <HOP><NAME>Cascade</NAME><ALPHA>5.5</ALPHA></HOP>
+                <HOP><NAME>Saaz</NAME><ALPHA>3.2</ALPHA></HOP>
+            </HOPS>
+            """.trimIndent()
+        )
+
+        val hops = result.getJSONObject("HOPS").getJSONArray("HOP")
+        assertEquals("Cascade", hops.getJSONObject(0).getString("NAME"))
+        assertEquals(3.2, hops.getJSONObject(1).getDouble("ALPHA"), 0.0)
+    }
 }

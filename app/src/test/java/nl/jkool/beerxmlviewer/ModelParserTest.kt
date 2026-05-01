@@ -1,8 +1,6 @@
 package nl.jkool.beerxmlviewer
 
-import org.json.JSONArray
 import org.json.JSONObject
-import org.json.XML
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -79,7 +77,7 @@ class ModelParserTest {
             </HOPS>
         """.trimIndent()
 
-        val hops = jsonToHopsObject(XML.toJSONObject(xml))
+        val hops = jsonToHopsObject(beerXmlToJSONObject(xml))
         val hopList = jsonObjectList(hops.data)
 
         assertEquals(listOf("Cascade", "Saaz"), hopList.map { it.getString("NAME") })
@@ -96,7 +94,7 @@ class ModelParserTest {
             </RECIPES>
         """.trimIndent()
 
-        val recipe = jsonToRecipesObject(XML.toJSONObject(xml)).data as JSONObject
+        val recipe = jsonToRecipesObject(beerXmlToJSONObject(xml)).data as JSONObject
 
         assertEquals("No style recipe", recipe.displayName())
         assertEquals("Unknown style", recipe.styleName())

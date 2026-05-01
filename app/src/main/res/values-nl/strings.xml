@@ -275,4 +275,101 @@
     <string name="FILL_UNTIL">Vullen tot</string>
     <string name="fullInfo">Toon alle beschikbare informatievelden in recepten en brouwsels</string>
     <string name="EQUIPMENT">Instalatie</string>
+    <string name="nav_hop">Hop</string>
+    <string name="nav_fermentable">Vergistbaar ingredient</string>
+    <string name="nav_yeast">Gist</string>
+    <string name="nav_misc">Divers</string>
+    <string name="nav_water">Water</string>
+    <string name="nav_equipment">Installatie</string>
+    <string name="nav_style">Stijl</string>
+    <string name="nav_mash">Maisch</string>
+    <string name="nav_recipe">Recept</string>
+    <string name="nav_brew">Brouwsels</string>
+    <string name="content_description_menu">Menu</string>
+    <string name="content_description_settings">Instellingen</string>
+    <string name="content_description_download_from_ftp">Downloaden van FTP</string>
+    <string name="content_description_open_xml_file">XML-bestand openen</string>
+    <string name="content_description_dismiss_message">Melding sluiten</string>
+    <string name="download_from_ftp">Downloaden van FTP</string>
+    <string name="open_xml_file">XML-bestand openen</string>
+    <string name="settings_title">Instellingen</string>
+    <string name="something_went_wrong">Er is iets misgegaan</string>
+    <string name="something_went_wrong_period">Er is iets misgegaan.</string>
+    <string name="no_file_found">Geen bestand gevonden. Open een BeerXML-bestand met de knop onderaan, of download via FTP in de instellingen.</string>
+    <string name="missing_request_code">requestCode ontbreekt</string>
+    <string name="fallback_file">bestand</string>
+    <string name="stored_file">%1$s opgeslagen</string>
+    <string name="failed_to_load_file">Laden van %1$s mislukt</string>
+    <string name="failed_to_load_hops">Laden van hop mislukt</string>
+    <string name="ftp_port_must_be_number">FTP-poort moet een getal zijn.</string>
+    <string name="ftp_site_required">FTP-site is verplicht.</string>
+    <string name="ftp_path_required">FTP-pad is verplicht.</string>
+    <string name="ftp_username_required">FTP-gebruikersnaam is verplicht.</string>
+    <string name="ftp_password_required">FTP-wachtwoord is verplicht.</string>
+    <string name="ftp_site_invalid">FTP-site is ongeldig.</string>
+    <string name="ftp_port_invalid">FTP-poort is ongeldig.</string>
+    <string name="ftp_unable_to_sync">Synchroniseren niet mogelijk, %1$s</string>
+    <string name="ftp_connecting">Verbinden met FTP-server…</string>
+    <string name="ftp_connecting_plain_warning">Verbinden met FTP-server. Gewone FTP is niet versleuteld.</string>
+    <string name="ftp_downloading_file">%1$s downloaden</string>
+    <string name="ftp_downloaded_files">%1$d van %2$d bestanden gedownload</string>
+    <string name="ftp_download_complete_message">Download voltooid. Gegevens vernieuwd.</string>
+    <string name="ftp_download_partial_message">%1$d van %2$d bestanden gedownload. Mislukt: %3$s</string>
+    <string name="ftp_could_not_connect">Kan geen verbinding maken met FTP-server.</string>
+    <string name="ftp_unknown_host">Kan geen verbinding maken met FTP-server. Weet je zeker dat het webadres klopt?</string>
+    <string name="ftp_timeout">Verbindingstime-out, server reageert niet.</string>
+    <string name="ftp_unable_to_sync_server">Synchroniseren vanaf FTP-server niet mogelijk.</string>
+    <string name="ftp_download_failed_title">Download mislukt</string>
+    <string name="ftp_download_warning_title">Download voltooid met problemen</string>
+    <string name="ftp_download_complete_title">Download voltooid</string>
+    <string name="ftp_downloading_title">Downloaden van FTP</string>
+    <string name="ftp_files_complete">%1$d van %2$d bestanden voltooid</string>
+    <string name="ftp_site_description">FTP-site. Je kunt een hostnaam of een volledige URI invullen, bijvoorbeeld ftp://example.com, ftpes://example.com of ftps://example.com. Gebruik ftpes:// of ftps:// voor versleutelde verbindingen als je server dit ondersteunt.</string>
+    <string name="ftp_site_label">ftp-site</string>
+    <string name="ftp_path_description">Pad, gebruik "/" voor de hoofdmap</string>
+    <string name="ftp_path_label">pad</string>
+    <string name="ftp_username_title">Gebruikersnaam</string>
+    <string name="ftp_username_label">gebruikersnaam</string>
+    <string name="ftp_password_title">Wachtwoord</string>
+    <string name="ftp_password_label">wachtwoord</string>
+    <string name="obtain_xml_from_ftp">XML ophalen via FTP/FTPS</string>
+    <string name="ftp_help_title">FTP-download instellen</string>
+    <string name="ftp_help_body">De app verbindt met de FTP/FTPS-server met de site, gebruikersnaam en het wachtwoord hieronder, en opent daarna het ingestelde pad. Het siteveld accepteert een hostnaam of een URI met ftp://, ftpes:// of ftps://. Zet de BeerXML-exportbestanden direct in die map. Ontbrekende bestanden worden overgeslagen en getoond in de samenvatting.</string>
+    <string name="ftp_expected_files_title">Verwachte bestanden</string>
+    <string name="show_ftp_help">FTP-download instellen tonen</string>
+    <string name="hide_ftp_help">FTP-download instellen verbergen</string>
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_summary">FTP-instellingen worden alleen op dit apparaat opgeslagen in versleutelde app-opslag. De app stuurt je serveradres, gebruikersnaam, wachtwoord of BeerXML-bestanden niet naar de ontwikkelaar of naar externe diensten.</string>
+    <string name="show_privacy_summary">Privacy-informatie tonen</string>
+    <string name="hide_privacy_summary">Privacy-informatie verbergen</string>
+    <string name="sort_by_name">Sorteren op naam</string>
+    <string name="sort_by_beer_style">Sorteren op bierstijl</string>
+    <string name="unnamed">Naamloos</string>
+    <string name="unnamed_recipe">Naamloos recept</string>
+    <string name="unknown_style">Onbekende stijl</string>
+    <string name="error_prefix">Fout: %1$s</string>
+    <string name="cannot_get_water_name">Kan waternaam niet ophalen</string>
+    <string name="cannot_get_amount">Kan hoeveelheid niet ophalen</string>
+    <string name="cannot_get_name">Kan naam niet ophalen</string>
+    <string name="cannot_get_supplier">Kan leverancier niet ophalen</string>
+    <string name="cannot_get_temp">Kan temperatuur niet ophalen</string>
+    <string name="cannot_get_time">Kan tijd niet ophalen</string>
+    <string name="cannot_find_hop_name">Kan hopnaam niet vinden</string>
+    <string name="cannot_find_hop_display_amount">Kan weergegeven hophoeveelheid niet vinden</string>
+    <string name="cannot_find_form">Kan vorm niet vinden</string>
+    <string name="cannot_find_hop_alpha">Kan hop-alpha niet vinden</string>
+    <string name="cannot_find_yeast_name">Kan gistnaam niet vinden</string>
+    <string name="cannot_find_yeast_amount">Kan gisthoeveelheid niet vinden</string>
+    <string-array name="ftp_expected_files">
+        <item>hops.xml</item>
+        <item>brews.xml</item>
+        <item>equipments.xml</item>
+        <item>fermentables.xml</item>
+        <item>mashs.xml</item>
+        <item>miscs.xml</item>
+        <item>recipes.xml</item>
+        <item>styles.xml</item>
+        <item>waters.xml</item>
+        <item>yeasts.xml</item>
+    </string-array>
 </resources>
