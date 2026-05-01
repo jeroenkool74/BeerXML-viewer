@@ -289,6 +289,7 @@
     <string name="content_description_settings">Instellingen</string>
     <string name="content_description_download_from_ftp">Downloaden van FTP</string>
     <string name="content_description_open_xml_file">XML-bestand openen</string>
+    <string name="content_description_dismiss_message">Melding sluiten</string>
     <string name="download_from_ftp">Downloaden van FTP</string>
     <string name="open_xml_file">XML-bestand openen</string>
     <string name="settings_title">Instellingen</string>
@@ -335,8 +336,12 @@
     <string name="ftp_help_title">FTP-download instellen</string>
     <string name="ftp_help_body">De app verbindt met de FTP/FTPS-server met de site, gebruikersnaam en het wachtwoord hieronder, en opent daarna het ingestelde pad. Het siteveld accepteert een hostnaam of een URI met ftp://, ftpes:// of ftps://. Zet de BeerXML-exportbestanden direct in die map. Ontbrekende bestanden worden overgeslagen en getoond in de samenvatting.</string>
     <string name="ftp_expected_files_title">Verwachte bestanden</string>
+    <string name="show_ftp_help">FTP-download instellen tonen</string>
+    <string name="hide_ftp_help">FTP-download instellen verbergen</string>
     <string name="privacy_title">Privacy</string>
     <string name="privacy_summary">FTP-instellingen worden alleen op dit apparaat opgeslagen in versleutelde app-opslag. De app stuurt je serveradres, gebruikersnaam, wachtwoord of BeerXML-bestanden niet naar de ontwikkelaar of naar externe diensten.</string>
+    <string name="show_privacy_summary">Privacy-informatie tonen</string>
+    <string name="hide_privacy_summary">Privacy-informatie verbergen</string>
     <string name="sort_by_name">Sorteren op naam</string>
     <string name="sort_by_beer_style">Sorteren op bierstijl</string>
     <string name="unnamed">Naamloos</string>

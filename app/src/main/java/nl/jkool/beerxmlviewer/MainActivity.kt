@@ -438,7 +438,8 @@ fun Main(
                 ) {
                     FtpDownloadStatusBanner(
                         status = ftpDownloadStatus,
-                        modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 12.dp)
+                        modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 12.dp),
+                        onDismiss = { ftpDownloadStatus = FtpDownloadStatus.Idle }
                     )
                     Box(modifier = Modifier.weight(1f)) {
                         val contentPadding = PaddingValues(0.dp)

@@ -19,14 +19,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -455,7 +458,11 @@ fun obtainFile(
 fun getFullInfoSetting(context: Context) = getSettings(context).getOrDefault("fullInfo", "false") == "true"
 
 @Composable
-fun FtpDownloadStatusBanner(status: FtpDownloadStatus, modifier: Modifier = Modifier) {
+fun FtpDownloadStatusBanner(
+    status: FtpDownloadStatus,
+    modifier: Modifier = Modifier,
+    onDismiss: (() -> Unit)? = null
+) {
     if (status == FtpDownloadStatus.Idle) return
 
     val containerColor = when (status) {
@@ -487,7 +494,24 @@ fun FtpDownloadStatusBanner(status: FtpDownloadStatus, modifier: Modifier = Modi
             .testTag("ftpDownloadStatusBanner")
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleSmall)
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f)
+                )
+                if (onDismiss != null && status !is FtpDownloadStatus.Running) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.testTag("ftpDownloadStatusDismissButton")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.content_description_dismiss_message)
+                        )
+                    }
+                }
+            }
             Text(text = message, style = MaterialTheme.typography.bodyMedium)
             if (status is FtpDownloadStatus.Running) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -506,6 +530,29 @@ fun FtpDownloadStatusBanner(status: FtpDownloadStatus, modifier: Modifier = Modi
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun OptionalSettingsInfo(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    collapsedText: String,
+    expandedText: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = { onExpandedChange(!expanded) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = if (expanded) expandedText else collapsedText)
+        }
+        if (expanded) {
+            Spacer(modifier = Modifier.height(8.dp))
+            content()
         }
     }
 }
@@ -592,6 +639,8 @@ fun Settings(activity: MainActivity, context: Context) {
         )
     }
     var ftpDownloadStatus by remember { mutableStateOf<FtpDownloadStatus>(FtpDownloadStatus.Idle) }
+    var showFtpHelp by remember { mutableStateOf(false) }
+    var showPrivacySummary by remember { mutableStateOf(false) }
     val ftpSettingsValid = hasValidFtpSettings(site, path, username, password)
     BackHandler(enabled = true, onBack = {
         activity.setContent {
@@ -630,14 +679,25 @@ fun Settings(activity: MainActivity, context: Context) {
                     .padding(innerPadding)
                     .padding(12.dp)
             ) {
-                FtpDownloadStatusBanner(
-                    status = ftpDownloadStatus,
+                OptionalSettingsInfo(
+                    expanded = showFtpHelp,
+                    onExpandedChange = { showFtpHelp = it },
+                    collapsedText = stringResource(R.string.show_ftp_help),
+                    expandedText = stringResource(R.string.hide_ftp_help),
                     modifier = Modifier.padding(bottom = 12.dp)
-                )
+                ) {
+                    FtpDownloadHelpCard()
+                }
 
-                FtpDownloadHelpCard(modifier = Modifier.padding(bottom = 12.dp))
-
-                PrivacySummaryCard(modifier = Modifier.padding(bottom = 12.dp))
+                OptionalSettingsInfo(
+                    expanded = showPrivacySummary,
+                    onExpandedChange = { showPrivacySummary = it },
+                    collapsedText = stringResource(R.string.show_privacy_summary),
+                    expandedText = stringResource(R.string.hide_privacy_summary),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                ) {
+                    PrivacySummaryCard()
+                }
 
                 Text(stringResource(R.string.ftp_site_description))
 
@@ -696,8 +756,16 @@ fun Settings(activity: MainActivity, context: Context) {
                     )
                 )
 
+                FtpDownloadStatusBanner(
+                    status = ftpDownloadStatus,
+                    modifier = Modifier.padding(top = 20.dp, bottom = 12.dp),
+                    onDismiss = { ftpDownloadStatus = FtpDownloadStatus.Idle }
+                )
+
                 Box(
-                    modifier = Modifier.padding(top = 20.dp)
+                    modifier = Modifier.padding(
+                        top = if (ftpDownloadStatus == FtpDownloadStatus.Idle) 20.dp else 0.dp
+                    )
                 ) {
                     Button(
                         enabled = ftpSettingsValid && !ftpDownloadStatus.isRunning,

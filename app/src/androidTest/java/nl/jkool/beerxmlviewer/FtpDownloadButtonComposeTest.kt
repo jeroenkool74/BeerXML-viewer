@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -63,6 +64,38 @@ class FtpDownloadButtonComposeTest {
 
         composeRule.onNodeWithTag("ftpDownloadStatusBanner").assertIsDisplayed()
         composeRule.onNodeWithText(message).assertIsDisplayed()
+    }
+
+    @Test
+    fun mainSuccessBannerCanBeDismissed() {
+        renderMainWithSettings(
+            site = "ftp://example.com",
+            path = "/",
+            username = "user",
+            password = "password",
+            ftpStatus = FtpDownloadStatus.Success("Download completed")
+        )
+
+        composeRule.onNodeWithTag("ftpDownloadStatusDismissButton").performClick()
+
+        composeRule.onNodeWithTag("ftpDownloadStatusBanner").assertDoesNotExist()
+    }
+
+    @Test
+    fun settingsInformationBlocksAreHiddenUntilOpened() {
+        val ftpHelpTitle = composeRule.activity.getString(R.string.ftp_help_title)
+        renderSettingsWithSettings(
+            site = "ftp://example.com",
+            path = "/",
+            username = "user",
+            password = "password"
+        )
+
+        composeRule.onNodeWithText(ftpHelpTitle).assertDoesNotExist()
+
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.show_ftp_help)).performClick()
+
+        composeRule.onNodeWithText(ftpHelpTitle).assertIsDisplayed()
     }
 
     @Test

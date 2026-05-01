@@ -288,6 +288,7 @@
     <string name="content_description_settings">Settings</string>
     <string name="content_description_download_from_ftp">Download from FTP</string>
     <string name="content_description_open_xml_file">Open XML file</string>
+    <string name="content_description_dismiss_message">Dismiss message</string>
     <string name="download_from_ftp">Download from FTP</string>
     <string name="open_xml_file">Open XML file</string>
     <string name="settings_title">Settings</string>
@@ -334,8 +335,12 @@
     <string name="ftp_help_title">FTP download setup</string>
     <string name="ftp_help_body">The app connects to the FTP/FTPS server with the site, username, and password below, then opens the configured path. The site field accepts a host name or a URI with ftp://, ftpes://, or ftps://. Put the BeerXML export files directly in that folder. Missing files are skipped and shown in the final summary.</string>
     <string name="ftp_expected_files_title">Expected files</string>
+    <string name="show_ftp_help">Show FTP download setup</string>
+    <string name="hide_ftp_help">Hide FTP download setup</string>
     <string name="privacy_title">Privacy</string>
     <string name="privacy_summary">FTP settings are stored only on this device in encrypted app storage. The app does not send your server address, username, password, or BeerXML files to the developer or to third-party services.</string>
+    <string name="show_privacy_summary">Show privacy information</string>
+    <string name="hide_privacy_summary">Hide privacy information</string>
     <string name="sort_by_name">Sort by name</string>
     <string name="sort_by_beer_style">Sort by beer style</string>
     <string name="unnamed">Unnamed</string>
