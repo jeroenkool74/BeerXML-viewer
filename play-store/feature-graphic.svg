@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="500" viewBox="0 0 1024 500" role="img" aria-labelledby="title desc">
+  <title id="title">BeerXML viewer feature graphic</title>
+  <desc id="desc">A simple Google Play feature graphic for BeerXML viewer using the real app icon.</desc>
+  <rect width="1024" height="500" fill="#433dc7"/>
+
+  <g transform="translate(72 98)">
+    <text x="0" y="0" fill="#fffaf1" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800" letter-spacing="-2.1" dominant-baseline="hanging">BeerXML</text>
+    <text x="0" y="78" fill="#fffaf1" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800" letter-spacing="-2.1" dominant-baseline="hanging">viewer</text>
+    <rect x="0" y="182" width="150" height="10" rx="5" fill="#f5a21b"/>
+    <text x="0" y="232" fill="#f4eadc" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="500">Open and sync BeerXML files</text>
+    <text x="0" y="272" fill="#f4eadc" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="500">on Android.</text>
+  </g>
+
+  <image x="612" y="54" width="392" height="392" href="ic_launcher-playstore.png" xlink:href="ic_launcher-playstore.png" preserveAspectRatio="xMidYMid meet"/>
+</svg>

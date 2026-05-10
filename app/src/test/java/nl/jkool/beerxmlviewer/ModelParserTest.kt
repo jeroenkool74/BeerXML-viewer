@@ -84,6 +84,24 @@ class ModelParserTest {
     }
 
     @Test
+    fun beerXmlRootDetectionMapsKnownEnvelopesToNavigationCodes() {
+        assertEquals(objectToCode["Hop"], beerXmlObjectCodeForRoot("HOPS"))
+        assertEquals(objectToCode["Fermentable"], beerXmlObjectCodeForRoot("FERMENTABLES"))
+        assertEquals(objectToCode["Yeast"], beerXmlObjectCodeForRoot("YEASTS"))
+        assertEquals(objectToCode["Misc"], beerXmlObjectCodeForRoot("MISCS"))
+        assertEquals(objectToCode["Water"], beerXmlObjectCodeForRoot("WATERS"))
+        assertEquals(objectToCode["Equipment"], beerXmlObjectCodeForRoot("EQUIPMENTS"))
+        assertEquals(objectToCode["Style"], beerXmlObjectCodeForRoot("STYLES"))
+        assertEquals(objectToCode["Mash"], beerXmlObjectCodeForRoot("MASHS"))
+        assertEquals(objectToCode["Recipe"], beerXmlObjectCodeForRoot("RECIPES"))
+    }
+
+    @Test
+    fun beerXmlRootDetectionIgnoresUnknownXmlRoots() {
+        assertNull(beerXmlObjectCodeForRoot("NOT_BEER_XML"))
+    }
+
+    @Test
     fun recipeParserHandlesMissingOptionalStyle() {
         val xml = """
             <RECIPES>

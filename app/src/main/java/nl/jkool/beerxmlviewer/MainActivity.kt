@@ -2,6 +2,7 @@ package nl.jkool.beerxmlviewer
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -19,14 +20,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -48,11 +51,21 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import nl.jkool.beerxmlviewer.ui.theme.BeerXMLViewerTheme
+import org.json.JSONObject
+import java.util.Locale
 
+
+private val XML_MIME_TYPES = arrayOf(
+    "application/xml",
+    "text/xml",
+    "application/beerxml+xml",
+    "application/octet-stream"
+)
 
 val objectToCode: Map<String, Int> =
     mapOf(
@@ -70,6 +83,25 @@ val objectToCode: Map<String, Int> =
 
 val codeToObject: Map<Int, String> =
     objectToCode.map{ it.value to it.key }.toMap()
+
+internal fun beerXmlObjectCodeForRoot(rootName: String): Int? =
+    when (rootName.uppercase(Locale.US)) {
+        "HOPS" -> objectToCode["Hop"]
+        "FERMENTABLES" -> objectToCode["Fermentable"]
+        "YEASTS" -> objectToCode["Yeast"]
+        "MISCS" -> objectToCode["Misc"]
+        "WATERS" -> objectToCode["Water"]
+        "EQUIPMENTS" -> objectToCode["Equipment"]
+        "STYLES" -> objectToCode["Style"]
+        "MASHS" -> objectToCode["Mash"]
+        "RECIPES" -> objectToCode["Recipe"]
+        else -> null
+    }
+
+private fun JSONObject.rootName(): String? {
+    val keys = keys()
+    return if (keys.hasNext()) keys.next() else null
+}
 
 private fun objectNameRes(code: Int): Int =
     when (code) {
@@ -90,10 +122,17 @@ private fun objectNameRes(code: Int): Int =
 @Suppress("DEPRECATION")
 open class MainActivity : ComponentActivity() {
 
+    private sealed class XmlImportResult {
+        data class Imported(val objectCode: Int, val stored: Boolean) : XmlImportResult()
+        object MissingRequestCode : XmlImportResult()
+        object UnsupportedFile : XmlImportResult()
+    }
+
     fun openFile(requestCode: Int) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "*/*"
+            putExtra(Intent.EXTRA_MIME_TYPES, XML_MIME_TYPES)
         }
 
         startActivityForResult(intent, requestCode)
@@ -104,12 +143,19 @@ open class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setInitialContent()
+        handleIncomingXmlIntent(intent)
     }
 
     protected open fun setInitialContent() {
         setContent {
             Main(this, applicationContext)
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIncomingXmlIntent(intent)
     }
 
     @Deprecated("Deprecated in Java")
@@ -121,43 +167,100 @@ open class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun handleIncomingXmlIntent(incomingIntent: Intent?) {
+        val uri = incomingIntent?.xmlUri() ?: return
+        importXmlFile(null, uri)
+        setIntent(Intent())
+    }
+
+    private fun Intent.xmlUri(): Uri? =
+        when (action) {
+            Intent.ACTION_VIEW -> data ?: firstClipDataUri()
+            Intent.ACTION_SEND -> getParcelableExtra<Uri>(Intent.EXTRA_STREAM) ?: firstClipDataUri()
+            else -> null
+        }
+
+    private fun Intent.firstClipDataUri(): Uri? =
+        clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
+
     private fun importXmlFile(requestCode: Int, resultData: Intent?) {
         val uri = resultData?.data ?: return
+        importXmlFile(requestCode, uri)
+    }
+
+    private fun importXmlFile(requestCode: Int?, uri: Uri) {
         Thread {
-            val stored = when (requestCode) {
-                objectToCode["Hop"] -> xmlUriToHops(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Fermentable"] -> xmlUriToFermentables(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Yeast"] -> xmlUriToYeasts(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Misc"] -> xmlUriToMiscs(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Water"] -> xmlUriToWaters(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Equipment"] -> xmlUriToEquipments(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Style"] -> xmlUriToStyles(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Mash"] -> xmlUriToMashs(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Recipe"] -> xmlUriToRecipes(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                objectToCode["Brew"] -> xmlUriToBrews(uri, applicationContext).also { it.store(applicationContext) }.data != null
-                else -> null
-            }
+            val result = importXmlUri(requestCode, uri)
             runOnUiThread {
-                when (stored) {
-                    null -> Toast.makeText(applicationContext, getString(R.string.missing_request_code), Toast.LENGTH_LONG).show()
-                    true -> {
-                        setContent {
-                            Main(this@MainActivity, applicationContext, requestCode)
-                        }
-                        Toast.makeText(
-                            applicationContext,
-                            getString(R.string.stored_file, getString(objectNameRes(requestCode))),
-                            Toast.LENGTH_LONG
-                        ).show()
+                showXmlImportResult(result)
+            }
+        }.start()
+    }
+
+    private fun importXmlUri(requestCode: Int?, uri: Uri): XmlImportResult {
+        return try {
+            val jsonObj = contentResolver.openInputStream(uri)?.bufferedReader().use { reader ->
+                beerXmlToJSONObject(reader?.readText())
+            }
+            val objectCode = requestCode
+                ?: jsonObj.rootName()?.let { beerXmlObjectCodeForRoot(it) }
+                ?: return XmlImportResult.UnsupportedFile
+            val stored = storeBeerXmlObject(objectCode, jsonObj)
+                ?: return XmlImportResult.MissingRequestCode
+
+            XmlImportResult.Imported(objectCode, stored)
+        } catch (_: Exception) {
+            requestCode?.let { XmlImportResult.Imported(it, false) }
+                ?: XmlImportResult.UnsupportedFile
+        }
+    }
+
+    private fun storeBeerXmlObject(objectCode: Int, jsonObj: JSONObject): Boolean? =
+        when (objectCode) {
+            objectToCode["Hop"] -> jsonToHopsObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Fermentable"] -> jsonToFermentablesObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Yeast"] -> jsonToYeastsObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Misc"] -> jsonToMiscsObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Water"] -> jsonToWatersObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Equipment"] -> jsonToEquipmentsObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Style"] -> jsonToStylesObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Mash"] -> jsonToMashsObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Recipe"] -> jsonToRecipesObject(jsonObj).also { it.store(applicationContext) }.data != null
+            objectToCode["Brew"] -> jsonToBrewsObject(jsonObj).also { it.store(applicationContext) }.data != null
+            else -> null
+        }
+
+    private fun showXmlImportResult(result: XmlImportResult) {
+        when (result) {
+            XmlImportResult.MissingRequestCode -> Toast.makeText(
+                applicationContext,
+                getString(R.string.missing_request_code),
+                Toast.LENGTH_LONG
+            ).show()
+            XmlImportResult.UnsupportedFile -> Toast.makeText(
+                applicationContext,
+                getString(R.string.unsupported_xml_file),
+                Toast.LENGTH_LONG
+            ).show()
+            is XmlImportResult.Imported -> {
+                if (result.stored) {
+                    setContent {
+                        Main(this@MainActivity, applicationContext, result.objectCode)
                     }
-                    false -> Toast.makeText(
+                    Toast.makeText(
                         applicationContext,
-                        getString(R.string.failed_to_load_file, getString(objectNameRes(requestCode))),
+                        getString(R.string.stored_file, getString(objectNameRes(result.objectCode))),
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.failed_to_load_file, getString(objectNameRes(result.objectCode))),
                         Toast.LENGTH_LONG
                     ).show()
                 }
             }
-        }.start()
+        }
     }
 }
 
@@ -175,6 +278,7 @@ fun Main(
         var navState by rememberSaveable { mutableIntStateOf(initView) }
         var refreshKey by remember { mutableIntStateOf(0) }
         var ftpDownloadStatus by remember { mutableStateOf(initialFtpDownloadStatus) }
+        var showOverflowMenu by remember { mutableStateOf(false) }
         val settings = getSettings(context)
         val fullInfo = settings.getOrDefault("fullInfo", "false") == "true"
         val ftpSettingsValid = hasValidFtpSettings(
@@ -384,36 +488,64 @@ fun Main(
                             )
                         },
                         title = {
-                            Text(text = stringResource(objectNameRes(navState)))
+                            Text(
+                                text = stringResource(objectNameRes(navState)),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         },
                         actions = {
-                            Button(
-                                enabled = ftpSettingsValid && !ftpDownloadStatus.isRunning,
-                                modifier = Modifier.testTag("mainFtpDownloadButton"),
-                                onClick = {
-                                    quickObtainFile(
-                                        activity,
-                                        context,
-                                        onStatusChanged = { ftpDownloadStatus = it },
-                                        onFinished = { refreshKey++ }
+                            Box {
+                                IconButton(
+                                    modifier = Modifier.testTag("mainOverflowMenuButton"),
+                                    onClick = { showOverflowMenu = true }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = stringResource(R.string.content_description_more_options)
                                     )
                                 }
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.download_24px),
-                                    contentDescription = stringResource(R.string.content_description_download_from_ftp)
-                                )
-                                Text(stringResource(R.string.download_from_ftp))
-                            }
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = stringResource(R.string.content_description_settings),
-                                modifier = Modifier.padding(start = 8.dp, end = 16.dp).clickable{
-                                    activity.setContent {
-                                        Settings(activity, context)
-                                    }
+                                DropdownMenu(
+                                    expanded = showOverflowMenu,
+                                    onDismissRequest = { showOverflowMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        enabled = ftpSettingsValid && !ftpDownloadStatus.isRunning,
+                                        modifier = Modifier.testTag("mainFtpDownloadButton"),
+                                        text = { Text(stringResource(R.string.download_from_ftp)) },
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.download_24px),
+                                                contentDescription = null
+                                            )
+                                        },
+                                        onClick = {
+                                            showOverflowMenu = false
+                                            quickObtainFile(
+                                                activity,
+                                                context,
+                                                onStatusChanged = { ftpDownloadStatus = it },
+                                                onFinished = { refreshKey++ }
+                                            )
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.settings_title)) },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Settings,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        onClick = {
+                                            showOverflowMenu = false
+                                            activity.setContent {
+                                                Settings(activity, context)
+                                            }
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         }
                     )
                 },

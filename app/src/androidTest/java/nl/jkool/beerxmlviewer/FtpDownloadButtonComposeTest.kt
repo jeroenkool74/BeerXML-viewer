@@ -23,6 +23,7 @@ class FtpDownloadButtonComposeTest {
     fun mainDownloadButton_isDisabledWhenSavedFtpSettingsAreInvalid() {
         renderMainWithSettings(site = "", path = "/", username = "user", password = "password")
 
+        composeRule.onNodeWithTag("mainOverflowMenuButton").performClick()
         composeRule.onNodeWithTag("mainFtpDownloadButton").assertIsNotEnabled()
     }
 
@@ -30,6 +31,7 @@ class FtpDownloadButtonComposeTest {
     fun mainDownloadButton_isEnabledWhenSavedFtpSettingsAreValid() {
         renderMainWithSettings(site = "ftp://example.com", path = "/", username = "user", password = "password")
 
+        composeRule.onNodeWithTag("mainOverflowMenuButton").performClick()
         composeRule.onNodeWithTag("mainFtpDownloadButton").assertIsEnabled()
     }
 
@@ -46,6 +48,7 @@ class FtpDownloadButtonComposeTest {
             )
         )
 
+        composeRule.onNodeWithTag("mainOverflowMenuButton").performClick()
         composeRule.onNodeWithTag("mainFtpDownloadButton").assertIsNotEnabled()
         composeRule.onNodeWithTag("ftpDownloadStatusBanner").assertIsDisplayed()
         composeRule.onNodeWithTag("ftpDownloadProgress").assertIsDisplayed()

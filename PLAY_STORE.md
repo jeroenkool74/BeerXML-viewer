@@ -22,6 +22,10 @@ Recommended option: GitHub Pages for this repository using the `docs/` folder on
 
 Other acceptable options: your own website, Netlify, Cloudflare Pages, or another static hosting provider with HTTPS. Avoid temporary links, private GitHub URLs, Google Drive links, or anything requiring sign-in.
 
+## Feature Graphic
+
+Use `play-store/feature-graphic.png` for the Google Play feature graphic. It is exported at `1024 x 500`; the editable source is `play-store/feature-graphic.svg`.
+
 ## Open-Source Notices
 
 The release app distributes ftp4j 1.7.2 under GNU LGPL 2.1. Keep `THIRD_PARTY_NOTICES.md` and `LICENSES/LGPL-2.1.txt` with the release materials, and provide the upstream ftp4j 1.7.2 source archive link before publishing.
